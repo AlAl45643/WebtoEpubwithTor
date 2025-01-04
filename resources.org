@@ -1,0 +1,9 @@
+Software Requirements by Karl Wiegers
+https://github.com/jam01/SRS-Template?tab=readme-ov-file
+draw.io
+Introduction to Design Principles by Christopher Fox
+https://biking.michael-simons.eu/docs/index.html#section-introduction-and-goals
+https://hsc.aim42.org/arc42/chapters/chap-01-Requirements.html
+https://tor.stackexchange.com/questions/652/how-to-call-tor-browser-using-selenium-using-java
+https://stackoverflow.com/questions/52440914/how-to-get-htmlagilitypack-htmldocument-from-selenium-driver-pagesource
+https://github.com/jfcardinal/HtmlToXml
