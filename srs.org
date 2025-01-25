@@ -109,8 +109,6 @@ A User can save the content of webpages in a list, export the content into one c
 
 * External Interface Requirements
 
-** The [user class or actor name] shall be able to [do something] [to some object] [qualifying conditions, response time, or quality statement].
-
 ** User Interfaces
 UI-1: The system shall be acessed through a command line interface.
 
