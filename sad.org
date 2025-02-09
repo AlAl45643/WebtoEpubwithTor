@@ -1,0 +1,342 @@
+* Introduction and Goals
+The Web to Epub with Tor (WETC) project shall automate the task of compiling referenced webpages within a website into a local Electronic Publicaton.
+
+The goal of the WETC project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
+
+** Requirements Overview
+Table 1. General Requirements
+| ID   | Feature                                                                                                             |
+|------+---------------------------------------------------------------------------------------------------------------------|
+| PF-1 | The product shall use standard tor relays to retrieve online content.                                               |
+| PF-2 | The product shall collect specific hyperlinks within a website using a matching pattern given by the user           |
+| PF-3 | The product shall save the specified webpages' content.                                                             |
+| PF-4 | The product shall assemble the saved webpages into a single continuous EPUB file in an order specified by the user. |
+| PF-5 | The product shall export the completed EPUB file to the user's preferred folder.                                    |
+
+** Quality Goals
+Table 2. Quality Goals
+| Quality     | Scenario                                     |
+|-------------+----------------------------------------------|
+| Usability   | Most webpages are accessible.                 |
+| Performance | Downloading webpages does not take too long. |
+| Security    | Accessing webpages happens only through tor.  |
+| Security    | A new tor identity is used for each session. |
+
+** Stakeholders
+Table 3. Stakeholders
+| Role    | Goal                                               |
+|---------+----------------------------------------------------|
+| Users   | Looking to automate a repetitive task anonymously. |
+| Hirers  | Understand the developers' skill.                  |
+| Ali Ali | Showcase and improve his skills, also a user.      |
+
+* Architecture Constraints
+Table 4. Software and Programming Constraints
+| ID  | Constraint                                                                                                           | Background and / or motivation                                                            |
+|-----+----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
+| TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                 |
+| TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure |
+
+Table 5. Operating System Constraints
+| ID  | Constraint                      | Explanation                                            |
+|-----+---------------------------------+--------------------------------------------------------|
+| TC3 | Windows 10 (latest) and Linux Fedora Workstation Edition (latest) Compatibility           | The application should be compatible with both windows |
+|     |                                 |                                                        |
+
+* Context and Scope
+
+** Business Context
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-1.png
+  @startuml
+  <style>
+  agent {
+          MinimumWidth 75
+          }
+          </style>
+          skinparam AgentBorderThickness 2
+          skinparam shadowing true
+          skinparam defaultTextAlignment center
+          skinparam AgentStereotypeFontSize 14
+          skinparam footerFontSize 15
+          skinparam footerFontColor Black
+          agent "**WET**" as WET #lightgray
+          agent "Requested Webpage " as Host <<Host>> #white
+          WET -ri-> Host : Webpage Requests
+          Host -le-> WET : Webpage Content
+          center footer "**WET Business Context**"
+  @enduml
+#+End_SRC
+
+#+RESULTS:
+[[file:B-1.png][Business Context for WET]]
+
+| Neighbor System | Exchanged Data                                                       | Format |
+|-----------------+----------------------------------------------------------------------+--------|
+| Host (inbound)  | Webpage Content: Headings, Paragaphs, Images, Link, other Multimedia | HTML   |
+| Host (outbound) | Webpage Requests: Hyperlink(s)                                       | String |
+
+** Technical Context
+#+BEGIN_SRC plantuml :file ~/org/WebScrapingWithTOR/B-4.png
+   @startuml
+  <style>
+  agent {
+          MinimumWidth 75
+          }
+          </style>
+          skinparam agentborderthickness 1
+          skinparam shadowing true
+          skinparam defaulttextalignment center
+          skinparam agentstereotypefontsize 14
+          skinparam footerfontsize 15
+          skinparam footerFontColor black
+          node "Web Server" as server {
+          agent "Requested Webpage(s)" as host #White
+                  }
+          interface "tor relay" as relay <<Protocol>> #White
+          node "User Hardware" as hwd #LightGray {
+                  node "Local System" as dwe #White {
+                          agent "**WET**" as WET <<Instance>> #White
+                          agent "Command-Line Interface" as cli <<Instance>> #White
+
+                          }
+                          }
+                          cli -right- WET
+                          WET -right- relay
+                          relay -right- host
+                          center footer "**WET Technical Context**"
+   @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:B-2.png][Technical Context for WET]]
+| Element                             | Description                                                                                               |
+|-------------------------------------+-----------------------------------------------------------------------------------------------------------|
+| <<Instance>> Command Line Interface | An instance of a command-line interface to communicate with WET such as Bash, Zsh, or Command Prompt.     |
+| <<Instance>> WET                    | An instance of a WET run by the user.                                                                     |
+| Local System                        | User environment that is compatible with WET.                                                             |
+| User Hardware                       | Physical server (typically a desktop computer), acessible by the user, that is running the local  system. |
+| <<Protocol>> tor relay              | Remote server that transmits encrypted traffic anonymously.                                               |
+| Web Server                          | Remote server where website content is stored. Tends to be behind a cloudfare proxy.                      |
+| Request Webpage(s)                  | Content that user requested.                                                                              |
+
+
+* Solution Strategy
+| Goal/Requirement                  | Architecural Approach                                                                           | Details |
+|-----------------------------------+-------------------------------------------------------------------------------------------------+---------|
+| Usability (75% Site Acessibility) | Imitate user browsing by scraping through a web browser and handover to user to bypass captchas |         |
+| Security (Tor circuits)           | Implement web automation                                                                        |         |
+
+* Building Block View
+** Level 1
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-3.png
+  @startuml
+  <style>
+  file {
+      MinimumWidth 5
+      MinimumLength 5
+      }
+  </style>
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam componentstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+  component "WET" as WET <<System>> #LightGray {
+  component "Retrieve-Links" as retrieve <<Epub-Task>> #orange
+  component "Generate-List" as generate <<Epub-Task>> #purple
+  component "Export-Epub" as export <<Epub-Task>> #green
+  component "Terminal" as term <<Desktop-App>> #White
+  label "control" as control #White
+  component "Selenium with Tor" as sel <<Web-Browser>> #White
+
+  term --> control
+  control --> generate
+  control --> retrieve
+  control --> export
+  retrieve --> sel #line:orange;text:orange : "retrieve"
+  export --> sel #line:green;text:green : "download"
+  }
+
+  database "Generated Files" as file <<File-System>> #White
+  database "Requested Webpages" as web <<System>> #White
+  artifact "Epub" as epub <<Output-File>> #White
+
+
+  epub --> file : "store"
+  retrieve --> file #line:orange;text:orange : "write"
+  generate --> file #line:purple;text:purple : "modify"
+  export --> file #line:green;text:green : "read"
+  export --> epub : "export"
+  sel --> web : "request"
+  center footer "**Building Block View - Level 1: Overview**"
+  @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:B-3.png][Level 1 Building Block View for WET]]
+| Element                           | Description                                                                                           |
+|-----------------------------------+-------------------------------------------------------------------------------------------------------|
+| <<Desktop-App>> Terminal          | An instance of a command-line interface to communicate with WET such as Bash, Zsh, or Command Prompt. |
+| <<Epub-Task>> Retrieve-Links      | Retrieves links from requested webpage according to user given pattern.                               |
+| <<Epub-Task>> Generate-List       | Generates desired list by letting user add, remove, change order of retrieved links.                  |
+| <<Epub-Task>> Export-Epub         | Exports epub by retrieving and assembling webpages from retrieved links.                              |
+| <<Web-Browser>> Selenium with Tor | Automated browser running Tor Browser to retrieve webpages anonymously.                               |
+| <<System>> Requested Webpages     | Requested webpages from user.                                                                         |
+| <<File-System>> Generated Files   | File system that holds generated files such as links and epub.                                        |
+| <<Output-File>> Epub              | Requested webpages assorted by Export-Epub requested by user. |
+
+* Runtime View
+** Typical Runtime View
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-4.png
+  @startuml
+   skinparam shadowing true
+   skinparam defaulttextalignment center
+   skinparam participantstereotypefontsize 13
+   skinparam footerfontsize 15
+   skinparam footerFontColor black
+   skinparam folderstereotypefontsize 13
+
+  participant "Terminal" as term <<Desktop-App>> #White
+  participant "Retrieve-Links" as retrieve <<Subsystem>> #orange
+  participant "Generate-List" as generate <<Subsyste>> #purple
+  participant "Export-Epub" as export <<Subsystem>> #green
+  participant "Selenium with Tor" as sel <<Web-Browser>> #White
+  database "Main Webpage" as web <<System>> #White
+  database "Listed Webpages" as web2 <<System>> #White
+  database "Generated Files" as file <<File-System>> #White
+
+
+  term -> retrieve : retrieveLinks(webpage, linkPattern)
+  activate term
+
+  activate retrieve
+  retrieve -> sel : request webpage.html
+  activate sel
+  sel -> web : webpage.html
+  activate web
+  web --> sel
+  deactivate web
+  sel --> retrieve
+  deactivate sel
+  retrieve -> file : links.txt
+  activate file
+  deactivate file
+  deactivate retrieve
+
+  term -> generate : displayList
+  activate generate
+  generate -> file : links.txt
+  activate file
+  file --> generate
+  deactivate file
+  generate --> term
+
+  term -> generate : removeItem(itemIndex)
+  generate -> file : links.txt
+  activate file
+  file --> generate
+  generate -> file : modified links.txt
+  deactivate file
+
+  term -> generate : displayList
+  generate -> file : links.txt
+  activate file
+  file --> generate
+  deactivate file
+  generate --> term
+  deactivate generate
+
+  term -> export : exportToEpub
+  activate export
+  export -> file : links.txt
+  activate file
+  file --> export
+  deactivate file
+  export -> sel : download webpage1.html webpage2.html....
+  activate sel
+  sel -> web2 : webpage1.html webpage2.html....
+  activate web2
+  web2 --> sel
+  deactivate web2
+  sel --> export
+  deactivate sel
+  export --> term : saved to ~/Downloads
+  deactivate export
+  deactivate term
+  center footer "**Runtime View: Typical Use**"
+#+END_SRC
+A plausible runtime view that an average user may run would be:
+1) Retrieving links from a website.
+2) Modifying the retrieved links by removing specific items
+3) Exporting the retrieved links to an epub.
+
+#+RESULTS:
+[[file:B-4.png][Typical Runtime View for WET]]
+
+
+** Captcha Runtime View
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-5.png
+  @startuml
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam participantstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+  participant "Terminal" as term <<Desktop-App>> #White
+  participant "Retrieve-Links" as retrieve <<Subsystem>> #orange
+  participant "Selenium with Tor" as sel <<Web-Browser>> #White
+  database "Main Webpage" as web <<System>> #White
+  database "Generated Files" as file <<File-System>> #White
+
+
+  term -> retrieve : retrieveLinks(webpage, linkPattern)
+  activate term
+
+  activate retrieve
+  retrieve -> sel : request webpage.html
+  activate sel
+  sel -> web : webpage.html
+  activate web
+  web --> sel : request captcha
+  sel -> term : solve captcha
+  term --> sel
+  sel -> web : webpage.html
+  web --> sel
+  deactivate web
+  sel --> retrieve
+  deactivate sel
+  retrieve -> file : links.txt
+  activate file
+  deactivate file
+  deactivate retrieve
+  deactivate term
+  center footer "**Runtime View: Captcha**"
+#+END_SRC
+
+A special but common runtime view would be website requesting a captcha to access its contents. It would need to be handled by:
+1) Detecting that a captcha has been requested.
+2) Sending the captcha to the user to solve.
+
+#+RESULTS:
+[[file:B-5.png][Captcha Runtime View for WET]]
+A similar pattern occurs for Export-Epub when it accesses webpages.
+
+* Deployment View
+** Infrastructure Level 1
+*** Overview Diagram
+*** Motivation
+*** Quality and/or Performance Features
+*** Mapping of Building Blocks to Infrastructure
+** Infrastructure Level 2
+*** [Infrastructure Element n]
+* Cross-cutting Concepts
+** [Concept n]
+* Architecture Decisions
+* Quality Requirements
+** Quality Tree
+** Quality Scenarios
+* Risks and Technical Debts
+* Glossary
