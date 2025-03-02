@@ -1,0 +1,127 @@
+Software Requirements Specification
+
+* For
+Version 0.1
+Prepared by Ali Ali
+
+* Table of Contents
+
+* Introduction
+** Purpose
+This SRS describes the functional and nonfunctional requirements for software release 1.0 of the Web to EPUB with Tor Scraper (WETS). This document is intended to be used by the developer who will implement and verify the correct functioning of the system. Unless otherwise noted, all requirements specified here are commited for release 1.0.
+
+** Product Scope
+The WETS will permit the developer to combine a selection of referenced web pages within a website into an electronic publication.
+
+** References
+
+* Product Overview
+
+** Product Perspective
+The Web to Epub with Tor Scraper is a replacement for downloading and converting web pages especially web novels. The context diagram in Figure A-1 illustrates the external entities and system interfaces for release 1.0.
+[[file:A-1.png][Context diagram for release 1.0 of the Web to Epub With Tor Scraper System.]]
+
+** Product Functions
+PF-1: The product shall use standard tor relays to retrieve online content.
+
+PF-2: The product shall collect specific hyperlinks within a website using a matching pattern given by the user.
+
+PF-3: The product shall save the specified webpages' content.
+
+PF-4: The product shall assemble the saved webpages into a single continuous EPUB file in an order specified by the user.
+
+PF-5: The product shall export the completed EPUB file to the user's preferred folder.
+
+** User Characteristics
+
+| User Classes | Description                                                                                                                                                                                              |
+|--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| User         | The User provides the website to be scanned, the matching pattern to scan with, and the order the webpages shall be assembled in. The User will then recieve the completed epub in his default directory |
+
+** Operating Environment
+OE-1: The WETS shall operate correctly with the following web browsing suite: Tor (latest version).
+
+OE-2: The WETS shall operate correctly with atleast the Fedora Workstation Edition OS (latest version).
+
+** Assumptions and Dependencies
+AS-1: The requested website and webpages are accessible.
+
+AS-2: The requested website and webpages reference some
+
+* System Features
+
+** Create a List
+
+*** Description
+The User can create a list of links by scanning a webpage with a pattern. Priority = High
+
+*** Functional Requirements
+| LinkList.New: | Creating a List                                           |
+|---------------+-----------------------------------------------------------|
+| .Link:        | The WETS shall prompt the User for a valid link.          |
+| .Pattern:     | The WETS shall prompt the User for a valid pattern.       |
+
+** View, Modify, and Delete Links in List
+
+*** Description
+A User can create, view, add, remove, switch, and reverse the links in a list. Priority = Medium
+
+*** Functional Requirements
+
+| LinkList.View: | Viewing the list of links                                                        |
+|----------------+----------------------------------------------------------------------------------|
+| .Start:        | The User shall specify a starting index of the range of links to be displayed. |
+| .Stop:         | The User shall specify a stopping index of the range of links to be displayed. |
+
+| LinkList.Add: | Adding a link                                                                 |
+|---------------+-------------------------------------------------------------------------------|
+| .Link:        | The WETS shall prompt the User for a valid link.                              |
+| .Index:       | The WETS shall prompt the User for a valid index for the link to be added to. |
+
+| LinkList.Remove: | Removing a link                                                 |
+|------------------+-----------------------------------------------------------------|
+| .Index:          | The WETS shall take a valid index to remove a link in the list. |
+
+** Export the List
+
+*** Description
+A User can save the content of webpages in a list, export the content into one continuous epub, and save it in their preferred folder. Priority = High
+
+*** Functional Requirements
+| LinkList.Export: | Exporting the list into an Epub                                       |
+|------------------+-----------------------------------------------------------------------|
+| .Location        | The User shall specify the location for the Epub to be exported to. |
+| .Confirm         | The COTS shall prompt the User to confirm the export.                 |
+
+* Data Requirements
+
+** Logical Data Model
+[[file:A-2.png][Partial data model for release 1.0 of the Web to EPUB with Tor Scraper System.]]
+
+** Data Dictionary
+| Data element    | Description                                                     | Composition or data type            | Length | Values                    |
+|-----------------+-----------------------------------------------------------------+-------------------------------------+--------+---------------------------|
+| link            | a link to a webpage, also called a hyperlink                    | alphanumeric and special characters |        |                           |
+| list of links   | a list of links described above                                 | alphanumeric and special characters |        |                           |
+| webpage content | the contents of a webpage, the html file                        |                                     |        |                           |
+| regex pattern   | a sequence of characters that specifies a match pattern in text | alphanumeric and special characters |        | default = all valid links |
+
+
+* External Interface Requirements
+
+** The [user class or actor name] shall be able to [do something] [to some object] [qualifying conditions, response time, or quality statement].
+
+** User Interfaces
+UI-1: The system shall be acessed through a command line interface.
+
+UI-2: The system shall provide a help command to explain how to use the system.
+
+* Quality Attributes
+
+** Usability Requirements
+USE-1: The WETS shall be able to access atleast 75 of the top 100 novels at [[https:https://www.novelupdates.com/series-ranking/][a site for cataloging community translations for eastern web novels.]].
+
+** Anonymity Requirements
+SEC-1: All internet acesses shall be routed through tor circuits.
+
+SEC-2: The system shall use a new tor circuit for each set of webpages requested to be scanned.
