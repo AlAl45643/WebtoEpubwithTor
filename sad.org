@@ -1,0 +1,418 @@
+* Introduction and Goals
+The Web to Epub with Tor (WETC) project shall automate the task of compiling referenced webpages within a website into a local Electronic Publicaton.
+
+The goal of the WETC project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
+
+** Requirements Overview
+Table 1. General Requirements
+| ID   | Feature                                                                                                             |
+|------+---------------------------------------------------------------------------------------------------------------------|
+| PF-1 | The product shall use standard tor relays to retrieve online content.                                               |
+| PF-2 | The product shall collect specific hyperlinks within a website using a matching pattern given by the user           |
+| PF-3 | The product shall save the specified webpages' content.                                                             |
+| PF-4 | The product shall assemble the saved webpages into a single continuous EPUB file in an order specified by the user. |
+| PF-5 | The product shall export the completed EPUB file to the user's preferred folder.                                    |
+
+** Quality Goals
+Table 2. Quality Goals
+| Quality     | Scenario                                     |
+|-------------+----------------------------------------------|
+| Usability   | Most webpages are accessible.                |
+| Performance | Downloading webpages does not take too long. |
+| Anonymity   | Accessing webpages happens only through tor. |
+| Anonymity   | A new tor identity is used for each session. |
+
+** Stakeholders
+Table 3. Stakeholders
+| Role    | Goal                                               |
+|---------+----------------------------------------------------|
+| Users   | Looking to automate a repetitive task anonymously. |
+| Hirers  | Understand the developers' skill.                  |
+| Ali Ali | Showcase and improve his skills, also a user.      |
+
+* Architecture Constraints
+Table 4. Software and Programming Constraints
+| ID  | Constraint                                                                                                           | Background and / or motivation                                                            |
+|-----+----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
+| TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                 |
+| TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure |
+
+Table 5. Operating System Constraints
+| ID  | Constraint                                        | Explanation                                            |
+|-----+---------------------------------------------------+--------------------------------------------------------|
+| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with both windows |
+
+* Context and Scope
+** Business Context
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-1.png
+  @startuml
+  skinparam AgentBorderThickness 2
+  skinparam shadowing true
+  skinparam defaultTextAlignment center
+  skinparam AgentStereotypeFontSize 14
+  skinparam footerFontSize 15
+  skinparam footerFontColor Black
+  component "**WET**" as WET <<System>> #lightpink
+  database "Requested Webpage" as Host <<Category>> <<Host>> #lightblue
+  note top : availability risk
+  actor "User" as user
+
+
+  user -do- WET
+  WET -ri- Host : Retrieve Webpage(s)
+  note top on link : anonymity quality
+
+  center footer "**WET Business Context**"
+  @enduml
+#+End_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-1.png]]
+
+| Actor                                   | Description                                                                                                                                           |
+|-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------|
+| User                                    | User that requests an epub assembled from a collection of webpages which are referenced within another webpage(s).                                    |
+| <<Category>> <<Host>> Requested Webpage | Webpages requested by the user. May not be available either due to not existing or being blocked by the host.                                         |
+| <<System>> WET                          | WET is our system that anonymously searches a webpage for links based on user given pattern and assembles the webpages from those links into an epub. |
+
+** Technical Context
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-2.png
+  @startuml
+  skinparam AgentBorderThickness 2
+  skinparam shadowing true
+  skinparam defaultTextAlignment center
+  skinparam AgentStereotypeFontSize 14
+  skinparam footerFontSize 15
+  skinparam footerFontColor Black
+  component "**WET**" as WET <<System>> #lightpink
+  database "Requested Webpage" as Host <<Category>> <<Host>> #lightblue
+  note top : availability risk
+  component "Command-Line Interface" as comm <<Application>> #lightblue
+  interface "Tor relay" as tor
+  note top : anonymity quality
+
+  comm -do- WET
+  comm -[hidden]do- WET
+  WET -ri- tor : HTTP/S
+  tor -ri- Host : HTTP/S
+
+  center footer "**WET Technical Context**"
+  @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-2.png]]
+| Actor                                  | Description                                                                                                                                       |
+|----------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------|
+| <<Application>> Command-Line Interface | A command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                                                      |
+| <<System>> WET                         | Our system that is controlled by a CLI which retrieves requested webpages through a tor relay.                                                    |
+| <<Protocol>> Tor relay                 | A protocol that transmits encrypted traffic anonymously by routing it through relays which make it difficult to trace the origin of information . |
+| <<Category>> <<Host>> Requested Webpage | Webpages requested by the user. May not be available either due to not existing or being blocked by the host.                                     |
+
+* Solution Strategy
+| Quality Goal                      | Solution Approach                                                                                | Link to Details |
+|-----------------------------------+--------------------------------------------------------------------------------------------------+-----------------|
+| Usability (75% Site Acessibility) | Imitate user browsing by scraping through a web browser and handover to user to bypass captchas. | [[*Cloudflare]]     |
+| Anonymity (Tor Relays)            | Use Tor Relays to access the internet.                                                           | [[*Tor Relays]]     |
+
+* Building Block View
+** Level 1
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-3.png
+  @startuml
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam componentstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+
+  component "WET" as wet <<system>> {
+  portin "Command Input/Output" as comm
+  portout "Internet Port" as internet
+  component "Retrieve Requests" as retrieve <<subsystem>>
+  component "Create Requests" as request <<subsystem>>
+
+  comm --> request
+  retrieve -up-> request
+  request -do-> retrieve
+  retrieve --> internet
+
+
+  }
+
+  center footer "**Building Block View - Level 1: Overview**"
+   @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-3.png]]
+| Actor                           | Description                                                                          |
+| <<subsystem>> Create Requests   | Responsible for assembling the list of links that will be sent to retrieve requests. |
+| <<subsystem>> Retrieve Requests | Responsible for retrieving the webpages requested from create requests.              |
+| Command Input/Output            | Port for commands input by user and command output through a Command-Line Interface. |
+| Internet Port                   | Port for content requested from internet.                                            |
+** Level 2
+*** Retrieve Requests
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-4.png
+    @startuml
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam participantstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+
+
+  circle "Create Requests" as req
+  circle "Internet Port" as internet
+
+  component "Retrieve Requests" as retrieve <<subsystem>> {
+
+  component "Retrieve Links" as links <<module>>
+  component "Retrieve Webpages" as pages <<module>>
+
+  portin " " as request
+  portout "Tor Protocol" as tor
+
+  req --> request
+  tor --> internet
+
+  request --> links
+  request --> pages
+
+  links --> tor
+  pages --> tor
+  }
+
+  center footer "**Building Block View - Level 2: Retrieve Requests**"
+    @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-4.png]]
+
+| Actor                        | Description                                                              |
+|------------------------------+--------------------------------------------------------------------------|
+| <<module>> Retrieve Links    | Retrieves referenced links within a webpage based on user given pattern. |
+| <<module>> Retrieve Webpages | Retrieves webpages and assembles them into an epub based on user given list. |
+
+* Runtime View
+** Typical Runtime View
+
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-5.png
+    @startuml
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam participantstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+  participant "Client" as client
+  participant "Create Requests" as request <<subsystem>>
+  participant "Retrieve Requests" as retrieve <<subsystem>>
+
+  client -> request : "requestLinks(link, regex)"
+  activate client
+  activate request
+  request -> retrieve : "retrieveLinks(link, regex)"
+  activate retrieve
+  retrieve --> request
+  deactivate request
+  deactivate retrieve
+
+  client -> request : "displayList()"
+  activate request
+  request --> client
+  client -> request : "delete(index)"
+  client -> request : "displayList()"
+  request --> client
+  client -> request : "exportToEpub()"
+  request -> retrieve : "exportToEpub(arrayOfPages)"
+  activate retrieve
+  deactivate request
+  deactivate retrieve
+  deactivate client
+
+  center footer "**Runtime View: Typical Use**"
+    @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-5.png]]
+
+A plausible runtime view that an average user may run would be:
+1) Retrieving links from a website.
+2) Modifying the retrieved links by removing specific items
+3) Exporting the retrieved links to an epub.
+
+** Captcha Runtime View
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-6.png
+    skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam participantstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+  participant "Client" as client
+  participant "Create Requests" as request <<subsystem>>
+  participant "Retrieve Requests" as retrieve <<subsystem>>
+
+  client -> request : "requestLinks(link, regex)"
+  activate client
+  activate request
+  request -> retrieve : "retrieveLinks(link, regex)"
+  activate retrieve
+  retrieve --> request
+  retrieve -> client : "solve captcha"
+  client --> retrieve
+  deactivate request
+  deactivate retrieve
+
+
+  client -> request : "displayList()"
+  activate request
+  request --> client
+  client -> request : "exportToEpub()"
+  request -> retrieve : "exportToEpub(arrayOfPages)"
+  activate retrieve
+  deactivate request
+  retrieve -> client : "solve captcha(s)"
+  client --> retrieve
+  deactivate retrieve
+  deactivate client
+
+
+
+  center footer "**Runtime View: Captcha**"
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-6.png]]
+
+A special but common runtime view would be a website requesting a captcha to access its contents. It would need to be handled by:
+1) Detecting that a captcha has been requested.
+2) Sending the captcha to the user to solve.
+
+* Deployment View
+** Infrastructure
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-7.png
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam componentstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+  left to right direction
+  'devices
+  node "Linux-PC" as hwd <<Device>>  #lightblue {
+
+  'environments
+  node "Desktop Environment" as env <<Environment>> #lightpink {
+
+  'service
+  component "Command-Line Interface" as comm <<Service>> #white
+
+  'system
+  component "WET" as wet <<System>> <<Executable>> #lightgreen
+
+  'artifacts
+  artifact "output.epub" as epub
+
+
+  }
+  }
+
+  'device
+  node "Webpage Server" as web <<Category>> <<Device>>  {
+  'artifacts
+  artifact "webpage.html" as page
+  }
+
+  wet -- web : HTTP/S
+
+  wet --> epub
+
+  comm -- wet : <<deploy>>
+
+
+center footer "**Deployment View Diagram for WET**"
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-7.png]]
+
+| Actor                               | Description                                                                                                                                                                                         |
+|-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| <<Device>> Linux-PC                 | Personal computer that is running a linux operating system such as Fedora Workstation Edition.                                                                                                      |
+| <<Environment>> Desktop Environment | Environment that provides a collection of graphical software for interacting with the computer's operating system.                                                                                  |
+| <<Service>> Command-Line Interface  | Command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                                                                                                          |
+| <<System>> <<Executable>> WET       | Our system as an executable that can be called from a command line interface.                                                                                                                       |
+| listOfLinks.txt                     | Artifact that contains the list of links retrieved from within a user-specified webpage (Webpage Server) using a pattern. This list can be modified after creation according to the user's command. |
+| <<Category>> webpage1.html          | Category of artifacts that is retrieved using the links in listOfLinks.txt from a Webpage Server. Stereotype <<Category>> declares this artifact usually exists                                     |
+| output.epub                         | Requested webpages assorted by Export-Epub requested by user.                                                                                                                                       |
+
+* Cross-cutting Concepts
+** Domain Model
+The most important data structure is the Page object. The Page object stores information about a webpage including hyperlink and HTML. The Page object requires both of these variables to exist and be valid at instantiation.
+
+#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-8.png
+  @startuml
+  struct Page {
+  String hyperlink
+  [Replace] pageContent
+  }
+
+  @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:~/org/WebtoEpubwithTor/B-8.png]]
+
+** Cloudflare
+The key problem in creating any webscraper is bypassing site protections that prevent scrapers from accessing a site. These site protections are typically implemented by content delivery networks (CDN). One popular CDN is Cloudflare which connects approximately 10% of all websites.
+
+Cloudflare detects bots with a multitude of methods including but not limited to TLS Fingerprinting, HTTP/2 Fingerprint, Canvas Fingerprinting, Captchas, and Browser specific api. With so many methods used it questions how our scraper will ever function?
+
+To bypass such methods we need to identify the common link between them. Which is that all of these methods try to separate user action and computer automated action. So in order to bypass such protections we must follow two principles.
+
++ Emulate user browsing behavior
++ Fallback to the user when we are stumped
+
+[Input Code Example Here]
+
+** Tor Relays
+Achieving our anonymity quality requires us to implement measures when accessing the web. These measures include using Tor Relays to access webpages.
+
+Tor Relays achieve anonymity by encrypting messages in multiple layers to be decrypted by selective computers in a chain. Each message goes through an
+1) Guard node, which knows the originator but not the message as its encrypted.
+2) Middle node, which knows the guard node but neither the originator or the message.
+3) Exit node, which knows the message and middle node but not the originator.
+
+To acquire these benefits the WET shall always use Tor Relays to access webpages.
+
+[Input Code Example Here]
+* Architecture Decisions
+** Tor Browser
+| Section      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+|--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title        | ADR 1: Anonymity with Tor Browser.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Context      | "Anonymity is to know an action but not who is comitting it. To not know who is committing but know what they are comitting requires that each action an anonymous person commits could possibly be done by someone else. We can accept this as true if we consider the opposite situation, if an action can only be done by one person then every time such an action is performed we could easily identify who is performing it. Furthermore, the fewer someone elses there are, the more unique we become, and the less anonymous we shall be. So, how do we ensure that our actions are identityless i.e. anonymous? |
+| Decision     | To ensure we are identityless we must adopt similar traits to others and hide our real-world identities. Our solution is to use the Tor Browser which with Tor Relays ensures that the servers we access do not know the sender, and a browser that obfusicates between its users. |
+| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Consequences | Will increase the anonymity quality of the user; Web automation tools may not support or easily support our configuration; May increase the chances of encountering Site Protections from Cloudflare; Will increase the required setup for the system on the user's end; Will make emulating a user browser environment easier.                                                                                                                                                           |
+
+** Selenium
+
+** Host Webpage
+** AngleSharp
+
+* Quality Requirements
+** Quality Tree
+** Quality Scenarios
+* Risks and Technical Debts
+* Glossary
