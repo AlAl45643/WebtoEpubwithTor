@@ -1,14 +1,18 @@
-* Introduction and Goals
-The Web to Epub with Tor (WETC) project shall automate the task of compiling referenced webpages within a website into a local Electronic Publicaton.
+Software Architecture Document
+* Changelog
+| Version Release | Major Changes                   | Date         |
+|-----------------+---------------------------------+--------------|
+|             1.0 | Initial release of the document | Mar 21, 2025 |
 
-The goal of the WETC project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
+* Introduction and Goals
+This SAD describes the design of the Web to Epub with Tor Software (WET). This WET shall automate the task of compiling referenced webpages within a website into a Electronic Publication (EPUB). The goal of the WET project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
 
 ** Requirements Overview
 Table 1. General Requirements
 | ID   | Feature                                                                                                             |
 |------+---------------------------------------------------------------------------------------------------------------------|
 | PF-1 | The product shall use standard tor relays to retrieve online content.                                               |
-| PF-2 | The product shall collect specific hyperlinks within a website using a matching pattern given by the user           |
+| PF-2 | The product shall collect specific hyperlinks within a website using a matching pattern given by the user.          |
 | PF-3 | The product shall save the specified webpages' content.                                                             |
 | PF-4 | The product shall assemble the saved webpages into a single continuous EPUB file in an order specified by the user. |
 | PF-5 | The product shall export the completed EPUB file to the user's preferred folder.                                    |
@@ -22,23 +26,23 @@ Table 2. Quality Goals
 
 ** Stakeholders
 Table 3. Stakeholders
-| Role    | Goal                                               |
-|---------+----------------------------------------------------|
-| Users   | Looking to automate a repetitive task anonymously. |
-| Hirers  | Understand the developers' skill.                  |
-| Ali Ali | Showcase and improve his skills, also a user.      |
+| Role      | Goal                                               |
+|-----------+----------------------------------------------------|
+| Users     | Looking to automate a repetitive task anonymously. |
+| Employers | Understand the developers' skill.                  |
+| Ali Ali   | Showcase and improve his skills, also a user.      |
 
 * Architecture Constraints
 Table 4. Software and Programming Constraints
 | ID  | Constraint                                                                                                           | Background and / or motivation                                                            |
 |-----+----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
 | TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                 |
-| TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure |
+| TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure. |
 
 Table 5. Operating System Constraints
 | ID  | Constraint                                        | Explanation                                            |
 |-----+---------------------------------------------------+--------------------------------------------------------|
-| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with both windows |
+| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with the Fedora Workstation Edition OS.
 
 * Context and Scope
 ** Business Context
@@ -50,8 +54,8 @@ Table 5. Operating System Constraints
   skinparam AgentStereotypeFontSize 14
   skinparam footerFontSize 15
   skinparam footerFontColor Black
-  component "**WET**" as WET <<System>> #lightpink
-  database "Requested Webpage" as Host <<Category>> <<Host>> #lightblue
+  component "**WET**" as WET <<System>>
+  database "Requested Webpage" as Host <<Category>> <<Host>>
   note top : availability risk
   actor "User" as user
 
@@ -82,10 +86,10 @@ Table 5. Operating System Constraints
   skinparam AgentStereotypeFontSize 14
   skinparam footerFontSize 15
   skinparam footerFontColor Black
-  component "**WET**" as WET <<System>> #lightpink
-  database "Requested Webpage" as Host <<Category>> <<Host>> #lightblue
+  component "**WET**" as WET <<System>>
+  database "Requested Webpage" as Host <<Category>> <<Host>>
   note top : availability risk
-  component "Command-Line Interface" as comm <<Application>> #lightblue
+  component "Command-Line Interface" as comm <<Application>>
   interface "Tor relay" as tor
   note top : anonymity quality
 
@@ -100,6 +104,7 @@ Table 5. Operating System Constraints
 
 #+RESULTS:
 [[file:~/org/WebtoEpubwithTor/B-2.png]]
+Table 6. Technical Context Description
 | Actor                                  | Description                                                                                                                                       |
 |----------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------|
 | <<Application>> Command-Line Interface | A command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                                                      |
@@ -108,6 +113,7 @@ Table 5. Operating System Constraints
 | <<Category>> <<Host>> Requested Webpage | Webpages requested by the user. May not be available either due to not existing or being blocked by the host.                                     |
 
 * Solution Strategy
+Table 7. Solution Strategy Approach
 | Quality Goal                      | Solution Approach                                                                                | Link to Details |
 |-----------------------------------+--------------------------------------------------------------------------------------------------+-----------------|
 | Usability (75% Site Acessibility) | Imitate user browsing by scraping through a web browser and handover to user to bypass captchas. | [[*Cloudflare]]     |
@@ -145,11 +151,12 @@ Table 5. Operating System Constraints
 
 #+RESULTS:
 [[file:~/org/WebtoEpubwithTor/B-3.png]]
-| Actor                           | Description                                                                          |
-| <<subsystem>> Create Requests   | Responsible for assembling the list of links that will be sent to retrieve requests. |
-| <<subsystem>> Retrieve Requests | Responsible for retrieving the webpages requested from create requests.              |
-| Command Input/Output            | Port for commands input by user and command output through a Command-Line Interface. |
-| Internet Port                   | Port for content requested from internet.                                            |
+Table 8. Building Block View Level 1 Description
+| Actor                           | Description                                                                                        |
+| <<subsystem>> Create Requests   | Responsible for assembling the list of links that will be sent to <<subsystem>> Retrieve Requests. |
+| <<subsystem>> Retrieve Requests | Responsible for retrieving the webpages requested from <<subsystem>> Create Requests.              |
+| Command Input/Output            | Port for command input and command oupt through a Command-Line Interface.                          |
+| Internet Port                   | Port for content requested from internet.                                                          |
 ** Level 2
 *** Retrieve Requests
 #+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-4.png
@@ -190,7 +197,7 @@ Table 5. Operating System Constraints
 
 #+RESULTS:
 [[file:~/org/WebtoEpubwithTor/B-4.png]]
-
+Table 9. Building Block View Level 2 Description
 | Actor                        | Description                                                              |
 |------------------------------+--------------------------------------------------------------------------|
 | <<module>> Retrieve Links    | Retrieves referenced links within a webpage based on user given pattern. |
@@ -242,9 +249,9 @@ Table 5. Operating System Constraints
 [[file:~/org/WebtoEpubwithTor/B-5.png]]
 
 A plausible runtime view that an average user may run would be:
-1) Retrieving links from a website.
+1) Retrieving links from a website
 2) Modifying the retrieved links by removing specific items
-3) Exporting the retrieved links to an epub.
+3) Exporting the retrieved links to an epub
 
 ** Captcha Runtime View
 #+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-6.png
@@ -292,8 +299,8 @@ A plausible runtime view that an average user may run would be:
 [[file:~/org/WebtoEpubwithTor/B-6.png]]
 
 A special but common runtime view would be a website requesting a captcha to access its contents. It would need to be handled by:
-1) Detecting that a captcha has been requested.
-2) Sending the captcha to the user to solve.
+1) Detecting that a captcha has been requested
+2) Sending the captcha to the user to solve
 
 * Deployment View
 ** Infrastructure
@@ -307,16 +314,16 @@ A special but common runtime view would be a website requesting a captcha to acc
 
   left to right direction
   'devices
-  node "Linux-PC" as hwd <<Device>>  #lightblue {
+  node "Linux-PC" as hwd <<Device>>  {
 
   'environments
-  node "Desktop Environment" as env <<Environment>> #lightpink {
+  node "Desktop Environment" as env <<Environment>> {
 
   'service
-  component "Command-Line Interface" as comm <<Service>> #white
+  component "Command-Line Interface" as comm <<Service>>
 
   'system
-  component "WET" as wet <<System>> <<Executable>> #lightgreen
+  component "WET" as wet <<System>> <<Executable>>
 
   'artifacts
   artifact "output.epub" as epub
@@ -344,19 +351,19 @@ center footer "**Deployment View Diagram for WET**"
 #+RESULTS:
 [[file:~/org/WebtoEpubwithTor/B-7.png]]
 
-| Actor                               | Description                                                                                                                                                                                         |
-|-------------------------------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| <<Device>> Linux-PC                 | Personal computer that is running a linux operating system such as Fedora Workstation Edition.                                                                                                      |
-| <<Environment>> Desktop Environment | Environment that provides a collection of graphical software for interacting with the computer's operating system.                                                                                  |
-| <<Service>> Command-Line Interface  | Command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                                                                                                          |
-| <<System>> <<Executable>> WET       | Our system as an executable that can be called from a command line interface.                                                                                                                       |
-| listOfLinks.txt                     | Artifact that contains the list of links retrieved from within a user-specified webpage (Webpage Server) using a pattern. This list can be modified after creation according to the user's command. |
-| <<Category>> webpage1.html          | Category of artifacts that is retrieved using the links in listOfLinks.txt from a Webpage Server. Stereotype <<Category>> declares this artifact usually exists                                     |
-| output.epub                         | Requested webpages assorted by Export-Epub requested by user.                                                                                                                                       |
+Table 10. Deployment View Description
+| Actor                               | Description                                                                                                        |
+|-------------------------------------+--------------------------------------------------------------------------------------------------------------------|
+| <<Device>> Linux-PC                 | Personal computer that is running a linux operating system such as Fedora Workstation Edition.                     |
+| <<Environment>> Desktop Environment | Environment that provides a collection of graphical software for interacting with the computer's operating system. |
+| <<Service>> Command-Line Interface  | Command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                         |
+| <<System>> <<Executable>> WET       | Our system as an executable that can be called from a command line interface.                                      |
+| <<Category>> webpage.html           | Category of artifacts that are retrieved from a Webpage Server.                                                    |
+| output.epub                         | Requested webpages assorted into an epub.
 
 * Cross-cutting Concepts
 ** Domain Model
-The most important data structure is the Page object. The Page object stores information about a webpage including hyperlink and HTML. The Page object requires both of these variables to exist and be valid at instantiation.
+The most important data structure is the Page object. The Page object stores information about a webpage including its hyperlink and HTML. The Page object requires both of these variables to exist and be valid at instantiation.
 
 #+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-8.png
   @startuml
@@ -374,9 +381,9 @@ The most important data structure is the Page object. The Page object stores inf
 ** Cloudflare
 The key problem in creating any webscraper is bypassing site protections that prevent scrapers from accessing a site. These site protections are typically implemented by content delivery networks (CDN). One popular CDN is Cloudflare which connects approximately 10% of all websites.
 
-Cloudflare detects bots with a multitude of methods including but not limited to TLS Fingerprinting, HTTP/2 Fingerprint, Canvas Fingerprinting, Captchas, and Browser specific api. With so many methods used it questions how our scraper will ever function?
+Cloudflare detects bots with a multitude of methods including but not limited to TLS Fingerprinting, HTTP/2 Fingerprint, Canvas Fingerprinting, Captchas, and Browser specific api. With so many methods used it questions how our webscraper will function?
 
-To bypass such methods we need to identify the common link between them. Which is that all of these methods try to separate user action and computer automated action. So in order to bypass such protections we must follow two principles.
+To bypass such methods we need to identify the common link between them, which is that all of these methods try to separate user action and computer automated action. So, in order to bypass such protections we must follow two principles.
 
 + Emulate user browsing behavior
 + Fallback to the user when we are stumped
@@ -386,10 +393,10 @@ To bypass such methods we need to identify the common link between them. Which i
 ** Tor Relays
 Achieving our anonymity quality requires us to implement measures when accessing the web. These measures include using Tor Relays to access webpages.
 
-Tor Relays achieve anonymity by encrypting messages in multiple layers to be decrypted by selective computers in a chain. Each message goes through an
-1) Guard node, which knows the originator but not the message as its encrypted.
-2) Middle node, which knows the guard node but neither the originator or the message.
-3) Exit node, which knows the message and middle node but not the originator.
+Tor Relays achieve anonymity by encrypting messages in multiple layers to be decrypted by selective computers in a chain. Each message goes through an:
+1) Guard node, which knows the originator but not the message as its encrypted
+2) Middle node, which knows the guard node but neither the originator or the message
+3) Exit node, which knows the message and middle node but not the originator
 
 To acquire these benefits the WET shall always use Tor Relays to access webpages.
 
@@ -397,6 +404,7 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 * Architecture Decisions
 ** Tor Browser
 25/03/02
+Table 11. Architecture Decision 1 Description
 | Section      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Title        | ADR 1: Anonymity with Tor Browser.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
@@ -407,6 +415,7 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 
 ** Selenium
 25/03/09
+Table 12. Architecture Decision 2 Description
 | Section      | Description                                                                                                                                                                                                                                                                                                               |
 |--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Title        | ADR 2: Automation with Selenium                                                                                                                                                                                                                                                                                           |
@@ -418,6 +427,7 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 ** Main Webpage/Referenced Webpages
 25/03/09
 
+Table 13. Architecture Decision 3 Description
 | Section      | Description                                                                                                                                                                                                                                                                                                                                              |
 |--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Title        | ADR 3: The Main Webpage/Referenced WebPages Design Pattern                                                                                                                                                                                                                                                                                               |
@@ -428,6 +438,7 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 
 ** AngleSharp
 25/03/09
+Table 14. Architecture Decision 4 Description
 | Section      | Description                                                                                                                                                                                                                                                                                                                              |
 |--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Title        | ADR 4: Converting HTML to XHTML with AngleSharp                                                                                                                                                                                                                                                                                          |
@@ -435,7 +446,7 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 | Decision     | In order to convert HTML to XHTML and parse HTML pages for links the AngleSharp parser will be used within this project.                                                                                                                                                                                                                 |
 | Status       | Accepted                                                                                                                                                                                                                                                                                                                                 |
 | Consequences | Will allow us to create epubs; May not convert XHTML correctly; Will increase creating Epub wait time; Will allow us to parselinks within a html document.                                                                                                                                                                               |
-
+Table 15. HTML Parser Pugh Matrix
 |          |                      |       Baseline |          A |               B |         C |
 |----------+----------------------+----------------+------------+-----------------+-----------|
 | Criteria | Criteria Description | Pandoc CL Tool | AngleSharp | HTMLAgilityPack | HTMLToXml |
@@ -446,7 +457,8 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 
 * Quality Requirements
 ** Quality List
-The following list contains all of our relevant quality attributes and their associated scenarios.
+The following list contains all of the relevant quality attributes and their associated scenarios.
+Table 16. Quality Attribute and Scenarios
 | Quality Attribute | Scenarios |
 |-------------------+-----------|
 | Understandibility | W02, W03  |
@@ -455,24 +467,32 @@ The following list contains all of our relevant quality attributes and their ass
 | Anonymity         | W04       |
 
 ** Quality Scenarios
-The following scenarios allow us to measure the fulfillment of our quality attributes.
+The following scenarios measure the fulfillment of our quality attributes.
+Table 17. Description of Scenarios
 | No. | Scenario                                                                                                                                                                                    |
 |-----+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | W01 | A user plans to download the top 100 novels from [[https://www.novelupdates.com/series-ranking/][novelupdates.]] He is able to download atleast 75 of the top 100 novels using the WET.                                                       |
 | W02 | A recruiter with basic knowledge of UML looks for an overview on the implementation of the WET. He understands the overall design of this WET within 15 minutes using this document.        |
-| W03 | An open source developer is looking for an code example to implement his own web scraper. He is able to find a test case that displays the WET's functionality in an understandable manner. |
-| W04 | A potential user is looking for an anonymous alternative to common web to epub aggregators. He finds that the WET meet his requirements. The user uses the WET and finds that all of his requests were done through TOR ensuring that his epub is created anonymously. |
+| W03 | An open source developer is looking for a code example to implement his own web scraper. He is able to find a test case that displays the WET's functionality in an understandable manner.  |
+| W04 | A potential user is looking for an anonymous alternative to common web to epub aggregators, he finds that the WET meet his requirements. The user uses the WET and finds that all of his requests were done through TOR ensuring that his epubs are created anonymously. |
 
 * Risks and Technical Debts
 
 ** TR1: Stricter Bot Protections
-Description: Cloudflare and other CDNs change their bot detection tools regularly, what may work today may not work tomorrow.
+Description: Cloudflare and other CDNs change their bot detection tools regularly so what may work today may not work tomorrow.
 
-Mitigation: The Retrieve Requests Level 2 Blackbox should be implemented first and documented with test cases to identify and reimplement functionality promptly.
+Mitigation: The Retrieve Requests Level 2 Blackbox should be implemented first and documented with test cases so as to identify and reimplement functionality promptly.
 ** TR2: TOR Blocked
+Description: The TOR network may be blocked in the users' area.
+
+Mitigation: Enable bridges for Tor Browser when necessary.
 
 ** TR3: Selenium Deanonymization
+Description: Selenium is not originally intended to be used anonymously and if incorrectly set up may lessen anonymity through sites identifying Selenium use.
+
+Mitigation: Check headless identification percentage with CreepJS in a supported environment.
 
 ** TR4: Improper XHTML
+Description: Even if HTML is improper it is still rendered by the browser while XHTML must have proper syntax. When converting HTML to XHTML it is possible that the converted XHTML is invalid due to broken syntax.
 
-* Glossary
+Mitigation: Consider using multiple parsers if one parser fails at converting HTML to XHTML.
