@@ -46,7 +46,7 @@ Table 5. Operating System Constraints
 
 * Context and Scope
 ** Business Context
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-1.png
+#+BEGIN_SRC plantuml :file ./B-1.png
   @startuml
   skinparam AgentBorderThickness 2
   skinparam shadowing true
@@ -69,7 +69,7 @@ Table 5. Operating System Constraints
 #+End_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-1.png]]
+[[file:./B-1.png]]
 
 | Actor                                   | Description                                                                                                                                           |
 |-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -78,7 +78,7 @@ Table 5. Operating System Constraints
 | <<System>> WET                          | WET is our system that anonymously searches a webpage for links based on user given pattern and assembles the webpages from those links into an epub. |
 
 ** Technical Context
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-2.png
+#+BEGIN_SRC plantuml :file ./B-2.png
   @startuml
   skinparam AgentBorderThickness 2
   skinparam shadowing true
@@ -103,7 +103,7 @@ Table 5. Operating System Constraints
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-2.png]]
+[[file:./B-2.png]]
 Table 6. Technical Context Description
 | Actor                                  | Description                                                                                                                                       |
 |----------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -121,7 +121,7 @@ Table 7. Solution Strategy Approach
 
 * Building Block View
 ** Level 1
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-3.png
+#+BEGIN_SRC plantuml :file ./B-3.png
   @startuml
   skinparam shadowing true
   skinparam defaulttextalignment center
@@ -132,25 +132,25 @@ Table 7. Solution Strategy Approach
 
 
   component "WET" as wet <<system>> {
-  portin "Command Input/Output" as comm
-  portout "Internet Port" as internet
-  component "Retrieve Requests" as retrieve <<subsystem>>
-  component "Create Requests" as request <<subsystem>>
+          portin "Command Input/Output" as comm
+          portout "Internet Port" as internet
+          component "Retrieve Requests" as retrieve <<subsystem>>
+          component "Create Requests" as request <<subsystem>>
 
-  comm --> request
-  retrieve -up-> request
-  request -do-> retrieve
-  retrieve --> internet
+          comm --> request
+          retrieve -up-> request
+          request -do-> retrieve
+          retrieve --> internet
 
 
   }
 
   center footer "**Building Block View - Level 1: Overview**"
-   @enduml
+  @enduml
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-3.png]]
+[[file:./B-3.png]]
 Table 8. Building Block View Level 1 Description
 | Actor                           | Description                                                                                        |
 | <<subsystem>> Create Requests   | Responsible for assembling the list of links that will be sent to <<subsystem>> Retrieve Requests. |
@@ -159,8 +159,8 @@ Table 8. Building Block View Level 1 Description
 | Internet Port                   | Port for content requested from internet.                                                          |
 ** Level 2
 *** Retrieve Requests
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-4.png
-    @startuml
+#+BEGIN_SRC plantuml :file ./B-4.png
+  @startuml
   skinparam shadowing true
   skinparam defaulttextalignment center
   skinparam participantstereotypefontsize 13
@@ -174,29 +174,31 @@ Table 8. Building Block View Level 1 Description
   circle "Internet Port" as internet
 
   component "Retrieve Requests" as retrieve <<subsystem>> {
+          component "Retrieved Links" as links <<module>>
+          component "Retrieved Webpages" as pages <<module>>
+          component "Seleniumed Tor Browser" as sel <<module>>
 
-  component "Retrieve Links" as links <<module>>
-  component "Retrieve Webpages" as pages <<module>>
+          portin " " as request
+          portout "Tor Protocol" as tor
 
-  portin " " as request
-  portout "Tor Protocol" as tor
+          req --> request
+          tor --> internet
 
-  req --> request
-  tor --> internet
+          request --> links
+          request --> pages
 
-  request --> links
-  request --> pages
+          links --> sel
+          pages --> sel
 
-  links --> tor
-  pages --> tor
+          sel --> tor
   }
 
   center footer "**Building Block View - Level 2: Retrieve Requests**"
-    @enduml
+  @enduml
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-4.png]]
+[[file:./B-4.png]]
 Table 9. Building Block View Level 2 Description
 | Actor                        | Description                                                              |
 |------------------------------+--------------------------------------------------------------------------|
@@ -206,8 +208,55 @@ Table 9. Building Block View Level 2 Description
 * Runtime View
 ** Typical Runtime View
 
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-5.png
-    @startuml
+#+BEGIN_SRC plantuml :file ./B-5.png
+  @startuml
+  skinparam shadowing true
+  skinparam defaulttextalignment center
+  skinparam participantstereotypefontsize 13
+  skinparam footerfontsize 15
+  skinparam footerFontColor black
+  skinparam folderstereotypefontsize 13
+
+  participant "Client" as client
+  participant "Create Requests" as request <<subsystem>>
+  participant "Retrieve Requests" as retrieve <<subsystem>>
+
+  client -> request : "RequestLinks(link, regex)"
+  activate client
+          activate request
+                  request -> retrieve : "RetrieveLinks(link, regex)"
+                  activate retrieve
+                          retrieve --> request
+                  deactivate request
+          deactivate retrieve
+
+          client -> request : "DisplayList()"
+          activate request
+                  request --> client
+                  client -> request : "Delete(index)"
+                  client -> request : "DisplayList()"
+                  request --> client
+                  client -> request : "ExportToEpub()"
+                  request -> retrieve : "ExportToEpub(arrayOfPages)"
+                  activate retrieve
+                  deactivate request
+          deactivate retrieve
+  deactivate client
+
+  center footer "**Runtime View: Typical Use**"
+  @enduml
+#+END_SRC
+
+#+RESULTS:
+[[file:./B-5.png]]
+
+A plausible runtime view that an average user may run would be:
+1) Retrieving links from a website
+2) Modifying the retrieved links by removing specific items
+3) Exporting the retrieved links to an epub
+
+** Captcha Runtime View
+#+BEGIN_SRC plantuml :file ./B-6.png
   skinparam shadowing true
   skinparam defaulttextalignment center
   skinparam participantstereotypefontsize 13
@@ -221,73 +270,26 @@ Table 9. Building Block View Level 2 Description
 
   client -> request : "requestLinks(link, regex)"
   activate client
-  activate request
-  request -> retrieve : "retrieveLinks(link, regex)"
-  activate retrieve
-  retrieve --> request
-  deactivate request
-  deactivate retrieve
-
-  client -> request : "displayList()"
-  activate request
-  request --> client
-  client -> request : "delete(index)"
-  client -> request : "displayList()"
-  request --> client
-  client -> request : "exportToEpub()"
-  request -> retrieve : "exportToEpub(arrayOfPages)"
-  activate retrieve
-  deactivate request
-  deactivate retrieve
-  deactivate client
-
-  center footer "**Runtime View: Typical Use**"
-    @enduml
-#+END_SRC
-
-#+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-5.png]]
-
-A plausible runtime view that an average user may run would be:
-1) Retrieving links from a website
-2) Modifying the retrieved links by removing specific items
-3) Exporting the retrieved links to an epub
-
-** Captcha Runtime View
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-6.png
-    skinparam shadowing true
-  skinparam defaulttextalignment center
-  skinparam participantstereotypefontsize 13
-  skinparam footerfontsize 15
-  skinparam footerFontColor black
-  skinparam folderstereotypefontsize 13
-
-  participant "Client" as client
-  participant "Create Requests" as request <<subsystem>>
-  participant "Retrieve Requests" as retrieve <<subsystem>>
-
-  client -> request : "requestLinks(link, regex)"
-  activate client
-  activate request
-  request -> retrieve : "retrieveLinks(link, regex)"
-  activate retrieve
-  retrieve --> request
-  retrieve -> client : "solve captcha"
-  client --> retrieve
-  deactivate request
-  deactivate retrieve
+          activate request
+                  request -> retrieve : "retrieveLinks(link, regex)"
+                  activate retrieve
+                          retrieve --> request
+                          retrieve -> client : "solve captcha"
+                          client --> retrieve
+                  deactivate request
+          deactivate retrieve
 
 
-  client -> request : "displayList()"
-  activate request
-  request --> client
-  client -> request : "exportToEpub()"
-  request -> retrieve : "exportToEpub(arrayOfPages)"
-  activate retrieve
-  deactivate request
-  retrieve -> client : "solve captcha(s)"
-  client --> retrieve
-  deactivate retrieve
+          client -> request : "displayList()"
+          activate request
+                  request --> client
+                  client -> request : "exportToEpub()"
+                  request -> retrieve : "exportToEpub(arrayOfPages)"
+                  activate retrieve
+                  deactivate request
+                  retrieve -> client : "solve captcha(s)"
+                  client --> retrieve
+          deactivate retrieve
   deactivate client
 
 
@@ -296,7 +298,7 @@ A plausible runtime view that an average user may run would be:
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-6.png]]
+[[file:./B-6.png]]
 
 A special but common runtime view would be a website requesting a captcha to access its contents. It would need to be handled by:
 1) Detecting that a captcha has been requested
@@ -304,7 +306,7 @@ A special but common runtime view would be a website requesting a captcha to acc
 
 * Deployment View
 ** Infrastructure
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-7.png
+#+BEGIN_SRC plantuml :file ./B-7.png
   skinparam shadowing true
   skinparam defaulttextalignment center
   skinparam componentstereotypefontsize 13
@@ -316,26 +318,26 @@ A special but common runtime view would be a website requesting a captcha to acc
   'devices
   node "Linux-PC" as hwd <<Device>>  {
 
-  'environments
-  node "Desktop Environment" as env <<Environment>> {
+          'environments
+          node "Desktop Environment" as env <<Environment>> {
 
-  'service
-  component "Command-Line Interface" as comm <<Service>>
+                  'service
+                  component "Command-Line Interface" as comm <<Service>>
 
-  'system
-  component "WET" as wet <<System>> <<Executable>>
+                  'system
+                  component "WET" as wet <<System>> <<Executable>>
 
-  'artifacts
-  artifact "output.epub" as epub
+                  'artifacts
+                  artifact "output.epub" as epub
 
 
-  }
+          }
   }
 
   'device
   node "Webpage Server" as web <<Category>> <<Device>>  {
-  'artifacts
-  artifact "webpage.html" as page
+          'artifacts
+          artifact "webpage.html" as page
   }
 
   wet -- web : HTTP/S
@@ -345,11 +347,11 @@ A special but common runtime view would be a website requesting a captcha to acc
   comm -- wet : <<deploy>>
 
 
-center footer "**Deployment View Diagram for WET**"
+  center footer "**Deployment View Diagram for WET**"
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-7.png]]
+[[file:./B-7.png]]
 
 Table 10. Deployment View Description
 | Actor                               | Description                                                                                                        |
@@ -365,18 +367,18 @@ Table 10. Deployment View Description
 ** Domain Model
 The most important data structure is the Page object. The Page object stores information about a webpage including its hyperlink and HTML. The Page object requires both of these variables to exist and be valid at instantiation.
 
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/B-8.png
+#+BEGIN_SRC plantuml :file ./B-8.png
   @startuml
   struct Page {
-  String hyperlink
-  [Replace] pageContent
+          String hyperlink
+          [Replace] pageContent
   }
 
   @enduml
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/B-8.png]]
+[[file:./B-8.png]]
 
 ** Cloudflare
 The key problem in creating any webscraper is bypassing site protections that prevent scrapers from accessing a site. These site protections are typically implemented by content delivery networks (CDN). One popular CDN is Cloudflare which connects approximately 10% of all websites.
@@ -388,7 +390,8 @@ To bypass such methods we need to identify the common link between them, which i
 + Emulate user browsing behavior
 + Fallback to the user when we are stumped
 
-[Input Code Example Here]
+
+** TODO [Input Code Example Here]
 
 ** Tor Relays
 Achieving our anonymity quality requires us to implement measures when accessing the web. These measures include using Tor Relays to access webpages.
@@ -400,7 +403,7 @@ Tor Relays achieve anonymity by encrypting messages in multiple layers to be dec
 
 To acquire these benefits the WET shall always use Tor Relays to access webpages.
 
-[Input Code Example Here]
+** TODO [Input Code Example Here]
 * Architecture Decisions
 ** Tor Browser
 25/03/02

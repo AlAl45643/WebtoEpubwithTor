@@ -15,7 +15,7 @@ The WET will combine a selection of referenced web pages within a website into a
 ** Product Perspective
 The Web to Epub with Tor Software is a replacement for downloading and converting web pages especially web novels. The context diagram in Figure A-1 illustrates the external entities and system interfaces for release 1.0.
 
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/A-1.png
+#+BEGIN_SRC plantuml :file ./A-1.png
   @startuml
   skinparam AgentBorderThickness 2
   skinparam shadowing true
@@ -36,7 +36,7 @@ The Web to Epub with Tor Software is a replacement for downloading and convertin
 #+End_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/A-1.png]]
+[[file:./A-1.png]]
 
 | User Class     | Description                                                    |
 |----------------+----------------------------------------------------------------|
@@ -119,7 +119,7 @@ A User can save the content of webpages in a list, export the content into one c
 
 * Data Requirements
 ** Logical Data Model
-#+BEGIN_SRC plantuml :file ~/org/WebtoEpubwithTor/A-2.png
+#+BEGIN_SRC plantuml :file ./A-2.png
   @startuml
   entity Page {
   }
@@ -128,7 +128,7 @@ A User can save the content of webpages in a list, export the content into one c
 #+END_SRC
 
 #+RESULTS:
-[[file:~/org/WebtoEpubwithTor/A-2.png]]
+[[file:./A-2.png]]
 
 ** Data Dictionary
 | Data element | Description                                            | Composition or data type   |
