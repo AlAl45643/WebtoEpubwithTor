@@ -24,7 +24,7 @@ bld/
 [Ll]og/
 
 # Cache
-.cache/
+**.cache/
 
 # Tor browser
 **/tor-browser/

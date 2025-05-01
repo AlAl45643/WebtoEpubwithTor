@@ -1,5 +1,4 @@
 ﻿using OpenQA.Selenium.Firefox;
-using System.IO;
 
 namespace source.Retrieve_Requests
 {
@@ -51,7 +50,7 @@ namespace source.Retrieve_Requests
             firefoxDriverService.FirefoxBinaryPath = binaryPath;
             firefoxDriverService.BrowserCommunicationPort = 2828;
 
-            firefoxOptions = new FirefoxOptions();
+            firefoxOptions = new();
             firefoxOptions.LogLevel = FirefoxDriverLogLevel.Trace;
             firefoxOptions.AddArguments("-profile", profilePath);
             firefoxOptions.SetPreference("marionette.debugging.clicktostart", false);

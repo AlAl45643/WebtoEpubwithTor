@@ -174,8 +174,8 @@ Table 8. Building Block View Level 1 Description
   circle "Internet Port" as internet
 
   component "Retrieve Requests" as retrieve <<subsystem>> {
-          component "Retrieved Links" as links <<module>>
-          component "Retrieved Webpages" as pages <<module>>
+          component "Retrieving Links" as links <<module>>
+          component "Retrieving Webpages" as pages <<module>>
           component "Seleniumed Tor Browser" as sel <<module>>
 
           portin " " as request
@@ -268,10 +268,10 @@ A plausible runtime view that an average user may run would be:
   participant "Create Requests" as request <<subsystem>>
   participant "Retrieve Requests" as retrieve <<subsystem>>
 
-  client -> request : "requestLinks(link, regex)"
+  client -> request : "RequestLinks(link, regex)"
   activate client
           activate request
-                  request -> retrieve : "retrieveLinks(link, regex)"
+                  request -> retrieve : "RetrieveLinks(link, regex)"
                   activate retrieve
                           retrieve --> request
                           retrieve -> client : "solve captcha"
@@ -280,11 +280,11 @@ A plausible runtime view that an average user may run would be:
           deactivate retrieve
 
 
-          client -> request : "displayList()"
+          client -> request : "DisplayList()"
           activate request
                   request --> client
-                  client -> request : "exportToEpub()"
-                  request -> retrieve : "exportToEpub(arrayOfPages)"
+                  client -> request : "ExportToEpub()"
+                  request -> retrieve : "ExportToEpub(arrayOfPages)"
                   activate retrieve
                   deactivate request
                   retrieve -> client : "solve captcha(s)"

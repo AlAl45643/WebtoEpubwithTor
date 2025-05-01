@@ -1,13 +1,9 @@
 ﻿using System.Text.RegularExpressions;
 using source.Retrieve_Requests;
+using source.Create_Requests;
 
-RetrievedLinks retrievedLinks = new RetrievedLinks();
-Regex regex = new Regex("chapter");
+RetrievingLinks retrievedLinks = new();
+CreatingRequests creatingRequests = new(retrievedLinks);
 
-List<source.Page> listOfPages = retrievedLinks.RetrieveLinks("https://fenrirealm.com/series/dorothys-forbidden-grimoire", regex);
-
-foreach (source.Page page in listOfPages)
-{
-    Console.WriteLine(page.Hyperlink);
-    Console.WriteLine(page.PageContent);
-}
+string link = "https://novelbin.com/b/dorothys-forbidden-grimoire#tab-chapters-title";
+Regex regex = new("chapter");
