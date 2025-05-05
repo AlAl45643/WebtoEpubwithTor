@@ -7,3 +7,5 @@ CreatingRequests creatingRequests = new(retrievedLinks);
 
 string link = "https://novelbin.com/b/dorothys-forbidden-grimoire#tab-chapters-title";
 Regex regex = new("chapter");
+
+creatingRequests.RequestLinks(link, regex);

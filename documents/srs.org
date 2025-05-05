@@ -77,13 +77,13 @@ AS-2: The requested website references the needed webpages.
 ** Create a List
 
 *** Description
-The User can create a list of links by scanning a webpage with a pattern. Priority = High
+The User can create a list of pages by scanning a webpage with a pattern. Priority = High
 
 *** Functional Requirements
-| Retrieve.Links: | Creating a List                                    |
-|-----------------+----------------------------------------------------|
-| .Link:          | The WET shall prompt the User for a valid link.    |
-| .Pattern:       | The WET shall prompt the User for a valid pattern. |
+| RetrievingRequests.Links: | Creating a List                                    |
+|---------------------------+----------------------------------------------------|
+| .Link:                    | The WET shall prompt the User for a valid link.    |
+| .Pattern:                 | The WET shall prompt the User for a valid pattern. |
 
 ** View, Modify, and Delete Links in List
 
@@ -92,19 +92,25 @@ A User can create, view, add, remove, switch, and reverse the links in a list. P
 
 *** Functional Requirements
 
-| Create.View: | Viewing the list of links                                                      |
-|--------------+--------------------------------------------------------------------------------|
-| .Start:      | The User shall specify a starting index of the range of links to be displayed. |
-| .Stop:       | The User shall specify a stopping index of the range of links to be displayed. |
+| CreatingRequests.Print | View all of the list of pages |
 
-| Create.Add: | Adding a link                                                                |
-|-------------+------------------------------------------------------------------------------|
-| .Link:      | The WET shall prompt the User for a valid link.                              |
-| .Index:     | The WET shall prompt the User for a valid index for the link to be added to. |
 
-| Create.Remove: | Removing a link                                                |
-|----------------+----------------------------------------------------------------|
-| .Index:        | The WET shall take a valid index to remove a link in the list. |
+| CreatingRequests.Print: | Viewing the list of pages from .Start to .Stop                                 |
+|-------------------------+--------------------------------------------------------------------------------|
+| .Start:                 | The User shall specify a starting index of the range of links to be displayed. |
+| .Stop:                  | The User shall specify a stopping index of the range of links to be displayed. |
+
+| CreatingRequests.Add: | Adding .Link at .Index                                                       |
+|-----------------------+------------------------------------------------------------------------------|
+| .Link:                | The WET shall prompt the User for a valid link.                              |
+| .Index:               | The WET shall prompt the User for a valid index for the link to be added to. |
+
+| CreatingRequests.Remove: | Removing a link at .Index                                      |
+|--------------------------+----------------------------------------------------------------|
+| .Index:                  | The WET shall take a valid index to remove a link in the list. |
+
+
+| CreatingRequests.Reverse | Reverse the list of pages. |
 
 ** Export to Epub
 
@@ -112,10 +118,10 @@ A User can create, view, add, remove, switch, and reverse the links in a list. P
 A User can save the content of webpages in a list, export the content into one continuous epub, and save it in their preferred folder. Priority = High
 
 *** Functional Requirements
-| Retrieve.Webpages: | Exporting the list into an Epub                                     |
-|--------------------+---------------------------------------------------------------------|
-| .Location          | The User shall specify the location for the Epub to be exported to. |
-| .Confirm           | The COTS shall prompt the User to confirm the export.               |
+| RetrievingRequests.Webpages: | Exporting the list into an Epub                                     |
+|-----------------------------+---------------------------------------------------------------------|
+| .Location                   | The User shall specify the location for the Epub to be exported to. |
+| .Confirm                    | The COTS shall prompt the User to confirm the export.               |
 
 * Data Requirements
 ** Logical Data Model

@@ -21,7 +21,6 @@ namespace source.Create_Requests
         /// <summary>
         /// Send request to retrieve links from webpage according to regex pattern.
         /// </summary>
-        /// <returns><c>List<Page></c></returns>
         public void RequestLinks(string link, Regex regex)
         {
             listOfPages = retrievingLinks.RetrieveLinks(link, regex);

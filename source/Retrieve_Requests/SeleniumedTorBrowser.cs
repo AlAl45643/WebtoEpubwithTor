@@ -41,6 +41,7 @@ namespace source.Retrieve_Requests
         public SeleniumedTorBrowser()
         {
             string currentDirectory = Directory.GetCurrentDirectory();
+            Console.WriteLine(currentDirectory);
             profilePath = currentDirectory + "/Retrieve_Requests/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/";
             binaryPath = currentDirectory + "/Retrieve_Requests/tor-browser/Browser/firefox";
             geckoDriverPath = currentDirectory + "/Retrieve_Requests/tor-browser/geckodriver";
@@ -50,8 +51,10 @@ namespace source.Retrieve_Requests
             firefoxDriverService.FirefoxBinaryPath = binaryPath;
             firefoxDriverService.BrowserCommunicationPort = 2828;
 
-            firefoxOptions = new();
-            firefoxOptions.LogLevel = FirefoxDriverLogLevel.Trace;
+            firefoxOptions = new()
+            {
+                LogLevel = FirefoxDriverLogLevel.Default
+            };
             firefoxOptions.AddArguments("-profile", profilePath);
             firefoxOptions.SetPreference("marionette.debugging.clicktostart", false);
             firefoxOptions.SetPreference("torbrowser.settings.quickstart.enabled", true);
