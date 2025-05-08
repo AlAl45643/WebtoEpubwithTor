@@ -1,6 +1,6 @@
 ﻿namespace source
 {
-    public struct Page
+    public class Page
     {
         /// <summary>
         /// Link to webpage.

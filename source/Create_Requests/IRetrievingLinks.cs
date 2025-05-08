@@ -7,7 +7,6 @@ namespace source.Create_Requests
         /// <summary>
         /// Retrieve links from a webpage according to regex pattern.
         /// </summary>
-        /// <returns><c>List<Page></c></returns>
-        List<Page> RetrieveLinks(string link, Regex regex);
+        void RetrieveLinks(List<Page> listOfPages, string link, Regex regex);
     }
 }

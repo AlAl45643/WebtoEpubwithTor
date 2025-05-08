@@ -2,10 +2,11 @@
 using source.Retrieve_Requests;
 using source.Create_Requests;
 
-RetrievingLinks retrievedLinks = new();
-CreatingRequests creatingRequests = new(retrievedLinks);
+RetrievingRequests retrievedLinks = new();
+CreatingRequests creatingRequests = new(retrievedLinks, retrievedLinks);
 
-string link = "https://novelbin.com/b/dorothys-forbidden-grimoire#tab-chapters-title";
+string link = "https://nhvnovels.com/novels/i-became-the-daughter-of-the-western-general-remake-version/";
 Regex regex = new("chapter");
 
 creatingRequests.RequestLinks(link, regex);
+creatingRequests.RequestWebpages();

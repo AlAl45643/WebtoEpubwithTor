@@ -5,12 +5,17 @@ namespace source.Create_Requests
     /// <summary>
     /// Initialize CreatingRequests with tor selenium backend.
     /// </summary>
-    public class CreatingRequests(IRetrievingLinks retrievingLinks)
+    public class CreatingRequests(IRetrievingLinks retrievingLinks, IRetrievingWebpages retrievingWebpages)
     {
         /// <summary>
         /// Backend for retrieving links from a webpage.
         /// </summary>
         private readonly IRetrievingLinks retrievingLinks = retrievingLinks;
+
+        /// <summary>
+        /// Backend for retrieving webpages from links in a List<Page>
+        /// </summary>
+        private readonly IRetrievingWebpages retrievingWebpages = retrievingWebpages;
 
         /// <summary>
         /// List of pages.
@@ -23,7 +28,15 @@ namespace source.Create_Requests
         /// </summary>
         public void RequestLinks(string link, Regex regex)
         {
-            listOfPages = retrievingLinks.RetrieveLinks(link, regex);
+            retrievingLinks.RetrieveLinks(listOfPages, link, regex);
+        }
+
+        /// <summary>
+        /// Send request to retrieve webpages from links in listOfPages.
+        /// </summary>
+        public void RequestWebpages()
+        {
+            retrievingWebpages.RetrieveWebpages(listOfPages);
         }
 
         /// <summary>

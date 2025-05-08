@@ -19,8 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="resources/*">
-       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <None Update="resources/**">
+       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 
