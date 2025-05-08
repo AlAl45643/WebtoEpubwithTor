@@ -1,8 +1,9 @@
 Software Architecture Document
 * Changelog
-| Version Release | Major Changes                   | Date         |
-|-----------------+---------------------------------+--------------|
-|             1.0 | Initial release of the document | Mar 21, 2025 |
+| Version Release | Major Changes                                                                                                                         | Date         |
+|-----------------+---------------------------------------------------------------------------------------------------------------------------------------+--------------|
+|             1.0 | Initial release of the document                                                                                                       | Mar 21, 2025 |
+|             1.1 | Images now export to relative file path; Seleniumed Tor Browser module added to Building Block Level 2; Name changes for items | Apr 30, 2025 |
 
 * Introduction and Goals
 This SAD describes the design of the Web to Epub with Tor Software (WET). This WET shall automate the task of compiling referenced webpages within a website into a Electronic Publication (EPUB). The goal of the WET project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
@@ -390,7 +391,6 @@ To bypass such methods we need to identify the common link between them, which i
 + Emulate user browsing behavior
 + Fallback to the user when we are stumped
 
-
 ** TODO [Input Code Example Here]
 
 ** Tor Relays
@@ -480,7 +480,6 @@ Table 17. Description of Scenarios
 | W04 | A potential user is looking for an anonymous alternative to common web to epub aggregators, he finds that the WET meet his requirements. The user uses the WET and finds that all of his requests were done through TOR ensuring that his epubs are created anonymously. |
 
 * Risks and Technical Debts
-
 ** TR1: Stricter Bot Protections
 Description: Cloudflare and other CDNs change their bot detection tools regularly so what may work today may not work tomorrow.
 

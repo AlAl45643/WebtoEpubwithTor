@@ -1,8 +1,10 @@
 Software Requirement Specification
 * Changelog
-| Version Release | Major Changes                   | Date |
-|-----------------+---------------------------------+------|
-|             1.0 | Initial release of the document | Mar 21, 2025 |
+| Version Release | Major Changes                                                                                | Date         |
+|-----------------+----------------------------------------------------------------------------------------------+--------------|
+|             1.0 | Initial release of the document                                                              | Mar 21, 2025 |
+|             1.1 | Images now export to relative file paths                                                     | Apr 30, 2025 |
+|             1.2 | Changed names for functional requirements in System Features; Added CreatingRequests.Reverse | May 5, 2025 |
 
 * Introduction
 ** Purpose
