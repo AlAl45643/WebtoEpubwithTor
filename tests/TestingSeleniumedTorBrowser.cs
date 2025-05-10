@@ -3,7 +3,6 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 using System.IO.Compression;
-using System.IO;
 using System.Diagnostics;
 
 namespace tests
@@ -32,8 +31,6 @@ namespace tests
                 LogLevel = FirefoxDriverLogLevel.Trace
             };
             firefoxOptions.AddArguments("-profile", profilePath);
-            firefoxOptions.SetPreference("marionette.debugging.clicktostart", false);
-            firefoxOptions.SetPreference("torbrowser.settings.quickstart.enabled", true);
 
             firefoxDriver = new FirefoxDriver(firefoxDriverService, firefoxOptions, TimeSpan.FromSeconds(180));
             return firefoxDriver;
@@ -279,8 +276,59 @@ namespace tests
             return;
         }
 
+        //
+        [TestCase("https://nhvnovels.com/novels/i-became-the-daughter-of-the-western-general-remake-version/")]
+        /// <summary>
+        /// Check if our request is being blocked by anything. If so, redirect to user control.
+        /// </summary>
+        public void Check_if_thing_is_blocking_us(string site)
+        {
+            Func<IWebDriver, bool> consent = NoInformationConsentForm;
+            Func<IWebDriver, bool> cloudflare = NoCloudflareCaptcha;
+            List<Func<IWebDriver, bool>> conditions = new() { consent, cloudflare };
+            WaitIfConditionsTrue(site, conditions);
+        }
 
 
+        /// <summary>
+        /// Waits if any of the conditions are true.
+        /// </summary>
+        public void WaitIfConditionsTrue(string site, List<Func<IWebDriver, bool>> conditions)
+        {
+            FirefoxDriver firefoxDriver = SetupTorBrowser();
+
+            using (firefoxDriver)
+            {
+                WebDriverWait wait = new(firefoxDriver, TimeSpan.FromSeconds(180));
+                wait.Until(i =>
+                {
+                    return firefoxDriver.Title == "";
+                });
+                firefoxDriver.Navigate().GoToUrl(site);
+                // wait.Until checks if TOR has established connection
+                foreach (Func<IWebDriver, bool> condition in conditions)
+                {
+                    wait.Until(condition);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns false if Information Consent Form is visible.
+        /// </summary>
+        /// <returns><c>bool</c></returns>
+        private bool NoInformationConsentForm(IWebDriver driver)
+        {
+            return driver.FindElements(By.ClassName("fc-consent-root")).Count == 0;
+        }
+
+        /// <summary>
+        /// Returns false if Cloudflare Captcha is visible.
+        /// </summary>
+        /// <returns><c>bool</c></returns>
+        private bool NoCloudflareCaptcha(IWebDriver driver)
+        {
+            return driver.FindElements(By.Id("chk-hdr")).Count == 0;
+        }
     }
-
 }
