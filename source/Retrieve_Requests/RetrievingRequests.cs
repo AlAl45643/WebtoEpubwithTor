@@ -1,10 +1,11 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.IO.Compression;
+using System.Text.RegularExpressions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using source.Create_Requests;
 namespace source.Retrieve_Requests
 {
-    public class RetrievingRequests : IRetrievingLinks, IRetrievingWebpages
+    public class RetrievingRequests : IRetrieveAndExport
     {
 
         /// <summary>
@@ -16,14 +17,9 @@ namespace source.Retrieve_Requests
             SeleniumedTorBrowser seleniumedTorBrowser = new();
             using (seleniumedTorBrowser.FirefoxDriver)
             {
-                // wait.Until checks if TOR has left the "Establishing Connection" page.
-                WebDriverWait wait = new(seleniumedTorBrowser.FirefoxDriver, TimeSpan.FromSeconds(180));
-                _ = wait.Until(i =>
-                {
-                    return seleniumedTorBrowser.FirefoxDriver.Title == "";
-                });
-
+                WaitForTorConnection(seleniumedTorBrowser);
                 seleniumedTorBrowser.FirefoxDriver.Navigate().GoToUrl(link);
+                WaitForBlockers(seleniumedTorBrowser);
                 var elements = seleniumedTorBrowser.FirefoxDriver.FindElements(By.TagName("a"));
                 foreach (var element in elements)
                 {
@@ -40,10 +36,9 @@ namespace source.Retrieve_Requests
                         listOfPages.Add(page);
                     }
                 }
-
             }
-
         }
+
         /// <summary>
         /// Retrieve PageContent for each Hyperlink in List<Page>. PageContent retrieved is the visible text in <body> </body>.
         /// </summary>
@@ -52,13 +47,7 @@ namespace source.Retrieve_Requests
             SeleniumedTorBrowser seleniumedTorBrowser = new();
             using (seleniumedTorBrowser.FirefoxDriver)
             {
-                // wait.Until checks if TOR has left the "Establishing Connection" page.
-                WebDriverWait wait = new(seleniumedTorBrowser.FirefoxDriver, TimeSpan.FromSeconds(180));
-                _ = wait.Until(i =>
-                {
-                    return seleniumedTorBrowser.FirefoxDriver.Title == "";
-                });
-
+                WaitForTorConnection(seleniumedTorBrowser);
                 for (int i = 0; i < listOfPages.Count; i++)
                 {
                     if (listOfPages[i].Hyperlink == null)
@@ -66,10 +55,142 @@ namespace source.Retrieve_Requests
                         continue;
                     }
                     seleniumedTorBrowser.FirefoxDriver.Navigate().GoToUrl(listOfPages[i].Hyperlink);
+                    WaitForBlockers(seleniumedTorBrowser);
                     listOfPages[i].PageContent = seleniumedTorBrowser.FirefoxDriver.FindElement(By.TagName("body")).Text;
                 }
-
             }
+        }
+
+        /// <summary>
+        /// Check if our request has been blocked by anything. If so, wait for user input.
+        /// </summary>
+        public void WaitForBlockers(SeleniumedTorBrowser seleniumedTorBrowser)
+        {
+            Func<IWebDriver, bool> consent = NoInformationConsentForm;
+            Func<IWebDriver, bool> cloudflare = NoCloudflareCaptcha;
+            List<Func<IWebDriver, bool>> conditions = new() { consent, cloudflare };
+            WebDriverWait wait = new(seleniumedTorBrowser.FirefoxDriver, TimeSpan.FromSeconds(180));
+            foreach (Func<IWebDriver, bool> condition in conditions)
+            {
+                wait.Until(condition);
+            }
+        }
+
+        /// <summary>
+        /// Wait until tor browser has established a connection.
+        /// </summary>
+        private void WaitForTorConnection(SeleniumedTorBrowser seleniumedTorBrowser)
+        {
+            WebDriverWait wait = new(seleniumedTorBrowser.FirefoxDriver, TimeSpan.FromSeconds(180));
+            _ = wait.Until(i =>
+            {
+                return seleniumedTorBrowser.FirefoxDriver.Title == "";
+            });
+        }
+
+        /// <summary>
+        /// Returns false if Information Consent Form is visible.
+        /// </summary>
+        /// <returns><c>bool</c></returns>
+        private bool NoInformationConsentForm(IWebDriver driver)
+        {
+            return driver.FindElements(By.ClassName("fc-consent-root")).Count == 0;
+        }
+
+        /// <summary>
+        /// Returns false if Cloudflare Captcha is visible.
+        /// </summary>
+        /// <returns><c>bool</c></returns>
+        private bool NoCloudflareCaptcha(IWebDriver driver)
+        {
+            return driver.FindElements(By.Id("chk-hdr")).Count == 0;
+        }
+
+        /// <summary>
+        /// Exports an epub by first converting HTML to XHTML, second creating content.opf and toc.ncx according to epub specification, and finally zipping up the arranged folder with a .epub extension. Epub is created in exportToLocation from each Page.HTML in listOfPages.
+        /// </summary>
+        public void ExportToEpub(List<Page> listOfPages, string exportToLocation)
+        {
+            string currentDirectory = Directory.GetCurrentDirectory();
+            string pathToEpubRoot = Path.Combine(currentDirectory, "resources", "epub");
+            string pathToEpubContent = Path.Combine(currentDirectory, "resources", "epub", "OEBPS");
+            string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
+            string epubUID = $"WET/{DateTime.Now}";
+
+            // create xhtml chapters in pathToEpubContent
+            for (int i = 0; i < listOfPages.Count; i++)
+            {
+                using (StreamWriter chapterFile = new(Path.Combine(pathToEpubContent, $"{i + 1}.xhtml")))
+                {
+                    chapterFile.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n<head>\n    <title>{i + 1}</title>\n</head>\n<body>\n<p>");
+                    chapterFile.Write(listOfPages[i].PageContent);
+                    chapterFile.Write($"</p>\n</body>\n</html>");
+                }
+            }
+
+            // create content.opf in pathToEpubContent
+            using (StreamWriter contentopf = new(Path.Combine(pathToEpubContent, "content.opf")))
+            {
+                contentopf.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookID\" version=\"2.0\">\n   <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">\n        <dc:title>WET</dc:title>\n        <dc:creator opf:role=\"aut\">WET</dc:creator>\n        <dc:language>en-US</dc:language>\n        <dc:rights>Public Domain</dc:rights>\n        <dc:publisher>WET</dc:publisher>\n        <dc:identifier id=\"BookID\" opf:scheme=\"UUID\">{epubUID}</dc:identifier>\n    </metadata>\n    <manifest>\n        <item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />\n");
+
+                for (int i = 0; i < listOfPages.Count; i++)
+                {
+                    contentopf.Write($"      <item id=\"page{i + 1}\" href=\"{i + 1}.xhtml\" media-type=\"application/xhtml+xml\" />\n");
+                }
+
+                contentopf.Write($"    </manifest>\n    <spine toc=\"ncx\">\n");
+
+                for (int i = 0; i < listOfPages.Count; i++)
+                {
+                    contentopf.Write($"       <itemref idref=\"page{i + 1}\" />\n");
+                }
+
+                contentopf.Write($"    </spine>\n</package>");
+            }
+
+            // creat toc.ncx in pathToEpubContent
+            using (StreamWriter tocncx = new(Path.Combine(pathToEpubContent, "toc.ncx")))
+            {
+                tocncx.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">\n\n<head>\n    <meta name=\"dtb:epubUID\" content=\"{epubUID}\"/>    <meta name=\"dtb:depth\" content=\"1\"/>\n    <meta name=\"dtb:totalPageCount\" content=\"0\"/>\n    <meta name=\"dtb:maxPageNumber\" content=\"0\"/>\n</head>\n\n<docTitle>\n    <text>WET</text>\n</docTitle>\n\n<navMap>\n");
+
+                for (int i = 0; i < listOfPages.Count; i++)
+                {
+                    tocncx.Write($"    <navPoint id=\"page{i + 1}\" playOrder=\"{i + 1}\">\n        <navLabel>\n        <text>Chapter {i + 1}</text>\n    </navLabel>\n    <content src=\"{i + 1}.xhtml\"/>\n</navPoint>\n");
+                }
+
+                tocncx.Write("\n\n</navMap>\n</ncx>");
+            }
+
+            // an epub file is just a zip with a .epub extension
+            using (FileStream zipFile = new FileStream(exportToLocation, FileMode.Create))
+            {
+                using (ZipArchive zipArchive = new ZipArchive(zipFile, ZipArchiveMode.Create))
+                {
+                    // mimetype file must come first and be uncompressed according to epub specifications
+                    zipArchive.CreateEntryFromFile(pathToMimetypeFile, Path.Combine("mimetype"), CompressionLevel.NoCompression);
+                    RecursiveEntry(zipArchive, pathToEpubRoot, "");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Add entries in 'directory' to 'archive' as 'pathInZip' recursively if entry is a directory.
+        /// </summary>
+        private void RecursiveEntry(ZipArchive zipArchive, string directory, string pathInZip)
+        {
+            var entries = Directory.EnumerateFileSystemEntries(directory);
+            foreach (var entry in entries)
+            {
+                string entryFileName = Regex.Match(entry, "(?!.*[\\/]).*").Value;
+                if (File.GetAttributes(entry).HasFlag(FileAttributes.Directory))
+                {
+                    string newPathInZip = Path.Combine(pathInZip, entryFileName);
+                    RecursiveEntry(zipArchive, entry, newPathInZip);
+                    continue;
+                }
+                zipArchive.CreateEntryFromFile(entry, Path.Combine(pathInZip, entryFileName));
+            }
+            return;
         }
     }
 }

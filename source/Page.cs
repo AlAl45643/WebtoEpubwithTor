@@ -5,11 +5,11 @@
         /// <summary>
         /// Link to webpage.
         /// </summary>
-        public string Hyperlink { get; set; }
+        public string? Hyperlink { get; set; }
 
         /// <summary>
         /// HTML content of page.
         /// </summary>
-        public string PageContent { get; set; }
+        public string? PageContent { get; set; }
     }
 }

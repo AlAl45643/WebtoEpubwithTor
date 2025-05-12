@@ -5,22 +5,18 @@ namespace source.Create_Requests
     /// <summary>
     /// Initialize CreatingRequests with tor selenium backend.
     /// </summary>
-    public class CreatingRequests(IRetrievingLinks retrievingLinks, IRetrievingWebpages retrievingWebpages)
+    public class CreatingRequests(IRetrieveAndExport retrieveAndExport)
     {
-        /// <summary>
-        /// Backend for retrieving links from a webpage.
-        /// </summary>
-        private readonly IRetrievingLinks retrievingLinks = retrievingLinks;
 
         /// <summary>
-        /// Backend for retrieving webpages from links in a List<Page>
+        /// Backend for retrieving from webpages and exporting to epubs.
         /// </summary>
-        private readonly IRetrievingWebpages retrievingWebpages = retrievingWebpages;
+        private IRetrieveAndExport retrieveAndExport = retrieveAndExport;
 
         /// <summary>
         /// List of pages.
         /// </summary>
-        private List<Page> listOfPages = [];
+        public List<Page> listOfPages = [];
 
 
         /// <summary>
@@ -28,7 +24,7 @@ namespace source.Create_Requests
         /// </summary>
         public void RequestLinks(string link, Regex regex)
         {
-            retrievingLinks.RetrieveLinks(listOfPages, link, regex);
+            retrieveAndExport.RetrieveLinks(listOfPages, link, regex);
         }
 
         /// <summary>
@@ -36,7 +32,7 @@ namespace source.Create_Requests
         /// </summary>
         public void RequestWebpages()
         {
-            retrievingWebpages.RetrieveWebpages(listOfPages);
+            retrieveAndExport.RetrieveWebpages(listOfPages);
         }
 
         /// <summary>
@@ -94,6 +90,14 @@ namespace source.Create_Requests
         public void Reverse()
         {
             listOfPages.Reverse();
+        }
+
+        /// <summary>
+        /// Assemble epub from each Page.HTML in List<Page> to exportToLocation.
+        /// </summary>
+        public void ExportToEpub(string exportToLocation)
+        {
+            retrieveAndExport.ExportToEpub(listOfPages, exportToLocation);
         }
 
     }

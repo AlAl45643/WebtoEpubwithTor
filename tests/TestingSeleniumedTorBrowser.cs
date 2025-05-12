@@ -276,7 +276,7 @@ namespace tests
             return;
         }
 
-        //
+        // Couldn't find a site that always shows cloudflare captchas
         [TestCase("https://nhvnovels.com/novels/i-became-the-daughter-of-the-western-general-remake-version/")]
         /// <summary>
         /// Check if our request is being blocked by anything. If so, redirect to user control.
