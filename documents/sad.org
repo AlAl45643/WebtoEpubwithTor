@@ -1,9 +1,10 @@
 Software Architecture Document
 * Changelog
-| Version Release | Major Changes                                                                                                                         | Date         |
-|-----------------+---------------------------------------------------------------------------------------------------------------------------------------+--------------|
-|             1.0 | Initial release of the document                                                                                                       | Mar 21, 2025 |
+| Version Release | Major Changes                                                                                                                  | Date         |
+|-----------------+--------------------------------------------------------------------------------------------------------------------------------+--------------|
+|             1.0 | Initial release of the document                                                                                                | Mar 21, 2025 |
 |             1.1 | Images now export to relative file path; Seleniumed Tor Browser module added to Building Block Level 2; Name changes for items | Apr 30, 2025 |
+|             1.2 | TR3: Selenium Deanonymization removed due to mitigation being too difficult;                                                   | May 12, 2025 |
 
 * Introduction and Goals
 This SAD describes the design of the Web to Epub with Tor Software (WET). This WET shall automate the task of compiling referenced webpages within a website into a Electronic Publication (EPUB). The goal of the WET project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
@@ -489,12 +490,7 @@ Description: The TOR network may be blocked in the users' area.
 
 Mitigation: Enable bridges for Tor Browser when necessary.
 
-** TR3: Selenium Deanonymization
-Description: Selenium is not originally intended to be used anonymously and if incorrectly set up may lessen anonymity through sites identifying Selenium use.
-
-Mitigation: Check headless identification percentage with CreepJS in a supported environment.
-
-** TR4: Improper XHTML
+** TR3: Improper XHTML
 Description: Even if HTML is improper it is still rendered by the browser while XHTML must have proper syntax. When converting HTML to XHTML it is possible that the converted XHTML is invalid due to broken syntax.
 
 Mitigation: Consider using multiple parsers if one parser fails at converting HTML to XHTML.
