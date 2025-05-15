@@ -2,19 +2,19 @@
 using System.Text.RegularExpressions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using source.Create_Requests;
 namespace source.Retrieve_Requests
 {
-    public class RetrievingRequests : IRetrieveAndExport
+    public class RetrievingRequests
     {
 
         /// <summary>
         /// Retrieve links from webpage according to regex pattern.
         /// </summary>
         /// <returns><c>Page[]</c></returns>
-        public void RetrieveLinks(List<Page> listOfPages, string link, Regex regex)
+        public void RetrieveLinks(string requestFilePath, string link, Regex regex)
         {
             SeleniumedTorBrowser seleniumedTorBrowser = new();
+            StreamWriter requestFile = File.AppendText(requestFilePath);
             using (seleniumedTorBrowser.FirefoxDriver)
             {
                 WaitForTorConnection(seleniumedTorBrowser);
@@ -31,34 +31,37 @@ namespace source.Retrieve_Requests
 
                     if (regex.IsMatch(href))
                     {
-                        Page page = new();
-                        page.Hyperlink = href;
-                        listOfPages.Add(page);
+                        requestFile.WriteLine($"{href}");
                     }
                 }
             }
+            requestFile.Close();
         }
 
         /// <summary>
         /// Retrieve PageContent for each Hyperlink in List<Page>. PageContent retrieved is the visible text in <body> </body>.
         /// </summary>
-        public void RetrieveWebpages(List<Page> listOfPages)
+        public void ExportToEpub(string requestFilePath, string exportToPath)
         {
             SeleniumedTorBrowser seleniumedTorBrowser = new();
+            List<string> listOfPages = new();
             using (seleniumedTorBrowser.FirefoxDriver)
             {
                 WaitForTorConnection(seleniumedTorBrowser);
-                for (int i = 0; i < listOfPages.Count; i++)
+                IEnumerable<string> lines = File.ReadLines(requestFilePath);
+                foreach (string line in lines)
                 {
-                    if (listOfPages[i].Hyperlink == null)
+                    if (line == "")
                     {
                         continue;
                     }
-                    seleniumedTorBrowser.FirefoxDriver.Navigate().GoToUrl(listOfPages[i].Hyperlink);
+                    seleniumedTorBrowser.FirefoxDriver.Navigate().GoToUrl(line);
                     WaitForBlockers(seleniumedTorBrowser);
-                    listOfPages[i].PageContent = seleniumedTorBrowser.FirefoxDriver.FindElement(By.TagName("body")).Text;
+                    listOfPages.Add(seleniumedTorBrowser.FirefoxDriver.FindElement(By.TagName("body")).Text);
                 }
             }
+            File.Delete(requestFilePath);
+            ExportToEpub(listOfPages, exportToPath);
         }
 
         /// <summary>
@@ -107,67 +110,65 @@ namespace source.Retrieve_Requests
         }
 
         /// <summary>
-        /// Exports an epub by first converting HTML to XHTML, second creating content.opf and toc.ncx according to epub specification, and finally zipping up the arranged folder with a .epub extension. Epub is created in exportToLocation from each Page.HTML in listOfPages.
+        /// Exports an epub by first converting HTML to XHTML, second creating content.opf and toc.ncx according to epub specification, and finally zipping up the arranged folder with a .epub extension. Epub is created in exportToPath from each Page.HTML in listOfPages.
         /// </summary>
-        public void ExportToEpub(List<Page> listOfPages, string exportToLocation)
+        private void ExportToEpub(List<string> pages, string exportToPath)
         {
             string currentDirectory = Directory.GetCurrentDirectory();
-            string pathToEpubRoot = Path.Combine(currentDirectory, "resources", "epub");
             string pathToEpubContent = Path.Combine(currentDirectory, "resources", "epub", "OEBPS");
-            string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
             string epubUID = $"WET/{DateTime.Now}";
 
             // create xhtml chapters in pathToEpubContent
-            for (int i = 0; i < listOfPages.Count; i++)
+            for (int i = 0; i < pages.Count; i++)
             {
-                using (StreamWriter chapterFile = new(Path.Combine(pathToEpubContent, $"{i + 1}.xhtml")))
-                {
-                    chapterFile.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n<head>\n    <title>{i + 1}</title>\n</head>\n<body>\n<p>");
-                    chapterFile.Write(listOfPages[i].PageContent);
-                    chapterFile.Write($"</p>\n</body>\n</html>");
-                }
+                string chapterFilePath = Path.Combine(pathToEpubContent, $"{i + 1}.xhtml");
+                File.WriteAllText(chapterFilePath, $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n<head>\n    <title>{i + 1}</title>\n</head>\n<body>\n<p>{pages[i]}</p>\n</body>\n</html>");
             }
 
             // create content.opf in pathToEpubContent
-            using (StreamWriter contentopf = new(Path.Combine(pathToEpubContent, "content.opf")))
+            string contentopfPath = Path.Combine(pathToEpubContent, "content.opf");
+            using (StreamWriter contentopfStream = new(contentopfPath))
             {
-                contentopf.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookID\" version=\"2.0\">\n   <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">\n        <dc:title>WET</dc:title>\n        <dc:creator opf:role=\"aut\">WET</dc:creator>\n        <dc:language>en-US</dc:language>\n        <dc:rights>Public Domain</dc:rights>\n        <dc:publisher>WET</dc:publisher>\n        <dc:identifier id=\"BookID\" opf:scheme=\"UUID\">{epubUID}</dc:identifier>\n    </metadata>\n    <manifest>\n        <item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />\n");
+                contentopfStream.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookID\" version=\"2.0\">\n   <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">\n        <dc:title>WET</dc:title>\n        <dc:creator opf:role=\"aut\">WET</dc:creator>\n        <dc:language>en-US</dc:language>\n        <dc:rights>Public Domain</dc:rights>\n        <dc:publisher>WET</dc:publisher>\n        <dc:identifier id=\"BookID\" opf:scheme=\"UUID\">{epubUID}</dc:identifier>\n    </metadata>\n    <manifest>\n        <item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />\n");
 
-                for (int i = 0; i < listOfPages.Count; i++)
+                for (int i = 0; i < pages.Count; i++)
                 {
-                    contentopf.Write($"      <item id=\"page{i + 1}\" href=\"{i + 1}.xhtml\" media-type=\"application/xhtml+xml\" />\n");
+                    contentopfStream.Write($"      <item id=\"page{i + 1}\" href=\"{i + 1}.xhtml\" media-type=\"application/xhtml+xml\" />\n");
                 }
 
-                contentopf.Write($"    </manifest>\n    <spine toc=\"ncx\">\n");
+                contentopfStream.Write($"    </manifest>\n    <spine toc=\"ncx\">\n");
 
-                for (int i = 0; i < listOfPages.Count; i++)
+                for (int i = 0; i < pages.Count; i++)
                 {
-                    contentopf.Write($"       <itemref idref=\"page{i + 1}\" />\n");
+                    contentopfStream.Write($"       <itemref idref=\"page{i + 1}\" />\n");
                 }
 
-                contentopf.Write($"    </spine>\n</package>");
+                contentopfStream.Write($"    </spine>\n</package>");
             }
 
             // creat toc.ncx in pathToEpubContent
-            using (StreamWriter tocncx = new(Path.Combine(pathToEpubContent, "toc.ncx")))
+            string tocncx = Path.Combine(pathToEpubContent, "toc.ncx");
+            using (StreamWriter tocncxStream = new(tocncx))
             {
-                tocncx.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">\n\n<head>\n    <meta name=\"dtb:epubUID\" content=\"{epubUID}\"/>    <meta name=\"dtb:depth\" content=\"1\"/>\n    <meta name=\"dtb:totalPageCount\" content=\"0\"/>\n    <meta name=\"dtb:maxPageNumber\" content=\"0\"/>\n</head>\n\n<docTitle>\n    <text>WET</text>\n</docTitle>\n\n<navMap>\n");
+                tocncxStream.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">\n\n<head>\n    <meta name=\"dtb:epubUID\" content=\"{epubUID}\"/>    <meta name=\"dtb:depth\" content=\"1\"/>\n    <meta name=\"dtb:totalPageCount\" content=\"0\"/>\n    <meta name=\"dtb:maxPageNumber\" content=\"0\"/>\n</head>\n\n<docTitle>\n    <text>WET</text>\n</docTitle>\n\n<navMap>\n");
 
-                for (int i = 0; i < listOfPages.Count; i++)
+                for (int i = 0; i < pages.Count; i++)
                 {
-                    tocncx.Write($"    <navPoint id=\"page{i + 1}\" playOrder=\"{i + 1}\">\n        <navLabel>\n        <text>Chapter {i + 1}</text>\n    </navLabel>\n    <content src=\"{i + 1}.xhtml\"/>\n</navPoint>\n");
+                    tocncxStream.Write($"    <navPoint id=\"page{i + 1}\" playOrder=\"{i + 1}\">\n        <navLabel>\n        <text>Chapter {i + 1}</text>\n    </navLabel>\n    <content src=\"{i + 1}.xhtml\"/>\n</navPoint>\n");
                 }
 
-                tocncx.Write("\n\n</navMap>\n</ncx>");
+                tocncxStream.Write("\n\n</navMap>\n</ncx>");
             }
 
             // an epub file is just a zip with a .epub extension
-            using (FileStream zipFile = new FileStream(exportToLocation, FileMode.Create))
+            string pathToEpubRoot = Path.Combine(currentDirectory, "resources", "epub");
+            string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
+            using (FileStream zipFile = new FileStream(exportToPath, FileMode.Create))
             {
                 using (ZipArchive zipArchive = new ZipArchive(zipFile, ZipArchiveMode.Create))
                 {
                     // mimetype file must come first and be uncompressed according to epub specifications
-                    zipArchive.CreateEntryFromFile(pathToMimetypeFile, Path.Combine("mimetype"), CompressionLevel.NoCompression);
+                    zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype" , CompressionLevel.NoCompression);
                     RecursiveEntry(zipArchive, pathToEpubRoot, "");
                 }
             }

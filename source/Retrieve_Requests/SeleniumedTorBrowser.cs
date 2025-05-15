@@ -42,9 +42,9 @@ namespace source.Retrieve_Requests
         {
             string currentDirectory = Directory.GetCurrentDirectory();
             Console.WriteLine(currentDirectory);
-            profilePath = currentDirectory + "/Retrieve_Requests/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/";
-            binaryPath = currentDirectory + "/Retrieve_Requests/tor-browser/Browser/firefox";
-            geckoDriverPath = currentDirectory + "/Retrieve_Requests/tor-browser/geckodriver";
+            profilePath = currentDirectory + "/resources/tor-browser/Browser/TorBrowser/Data/Browser/profile.default/";
+            binaryPath = currentDirectory + "/resources/tor-browser/Browser/firefox";
+            geckoDriverPath = currentDirectory + "/resources/tor-browser/geckodriver";
 
 
             firefoxDriverService = FirefoxDriverService.CreateDefaultService(geckoDriverPath);
@@ -53,7 +53,7 @@ namespace source.Retrieve_Requests
 
             firefoxOptions = new()
             {
-                LogLevel = FirefoxDriverLogLevel.Default
+                LogLevel = FirefoxDriverLogLevel.Fatal
             };
             firefoxOptions.AddArguments("-profile", profilePath);
             firefoxOptions.SetPreference("marionette.debugging.clicktostart", false);

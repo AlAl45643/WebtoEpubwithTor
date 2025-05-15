@@ -1,22 +1,42 @@
 ﻿using System.Text.RegularExpressions;
+using source.Retrieve_Requests;
 
 namespace source.Create_Requests
 {
     /// <summary>
     /// Initialize CreatingRequests with tor selenium backend.
     /// </summary>
-    public class CreatingRequests(IRetrieveAndExport retrieveAndExport)
+    public class CreatingRequests
     {
 
         /// <summary>
         /// Backend for retrieving from webpages and exporting to epubs.
         /// </summary>
-        private IRetrieveAndExport retrieveAndExport = retrieveAndExport;
+        private RetrievingRequests retrieveAndExport;
 
         /// <summary>
-        /// List of pages.
+        /// Name of request file.
         /// </summary>
-        public List<Page> listOfPages = [];
+        private string requestFilePath;
+
+        /// <summary>
+        /// Construct class with retrieveAndExport backend and name for request.
+        /// </summary>
+        public CreatingRequests(string requestFileName)
+        {
+            string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string wetDirectory = Path.Combine(homeDirectory, ".wet");
+            string requestFilePath = Path.Combine(wetDirectory, requestFileName);
+
+            if (!Directory.Exists(wetDirectory))
+            {
+                Directory.CreateDirectory(wetDirectory);
+            }
+            File.Create(requestFilePath).Dispose();
+
+            retrieveAndExport = new();
+            this.requestFilePath = requestFilePath;
+        }
 
 
         /// <summary>
@@ -24,25 +44,21 @@ namespace source.Create_Requests
         /// </summary>
         public void RequestLinks(string link, Regex regex)
         {
-            retrieveAndExport.RetrieveLinks(listOfPages, link, regex);
+            retrieveAndExport.RetrieveLinks(requestFilePath, link, regex);
         }
 
-        /// <summary>
-        /// Send request to retrieve webpages from links in listOfPages.
-        /// </summary>
-        public void RequestWebpages()
-        {
-            retrieveAndExport.RetrieveWebpages(listOfPages);
-        }
 
         /// <summary>
-        /// Displays list of page hyperlinks.
+        /// Displays list of hyperlinks in requestFile.
         /// </summary>
         public void Print()
         {
-            for (int i = 0; i < listOfPages.Count; i++)
+            IEnumerable<string> lines = File.ReadLines(requestFilePath);
+            int i = 0;
+            foreach (string line in lines)
             {
-                Console.WriteLine(i + ": " + listOfPages[i].Hyperlink);
+                Console.WriteLine($"{i}: {line}");
+                i++;
             }
 
         }
@@ -52,16 +68,29 @@ namespace source.Create_Requests
         /// </summary>
         public void Print(int start, int end)
         {
-            if (start < 0 || end > listOfPages.Count)
+            IEnumerable<string> lines = File.ReadLines(requestFilePath);
+            if (end > lines.Count() || start < 0 || start > end)
             {
                 return;
             }
 
-            for (int i = start; i < end; i++)
+            int i = 0;
+            foreach (string line in lines)
             {
-                Console.WriteLine(i + ": " + listOfPages[i].Hyperlink);
-            }
+                if (i < start)
+                {
+                    i++;
+                    continue;
+                }
 
+                if (i > end)
+                {
+                    break;
+                }
+
+                Console.WriteLine($"{i}: {line}");
+                i++;
+            }
         }
 
         /// <summary>
@@ -69,7 +98,9 @@ namespace source.Create_Requests
         /// </summary>
         public void Remove(int index)
         {
-            listOfPages.RemoveAt(index);
+            string[] lines = File.ReadAllLines(requestFilePath);
+            lines[index].Remove(0);
+
         }
 
         /// <summary>
@@ -77,11 +108,8 @@ namespace source.Create_Requests
         /// </summary>
         public void Add(int index, string link)
         {
-            Page page = new()
-            {
-                Hyperlink = link
-            };
-            listOfPages.Insert(index, page);
+            string[] lines = File.ReadAllLines(requestFilePath);
+            lines[index].Insert(0, link);
         }
 
         /// <summary>
@@ -89,7 +117,8 @@ namespace source.Create_Requests
         /// </summary>
         public void Reverse()
         {
-            listOfPages.Reverse();
+            string[] lines = File.ReadAllLines(requestFilePath);
+            lines.Reverse();
         }
 
         /// <summary>
@@ -97,7 +126,7 @@ namespace source.Create_Requests
         /// </summary>
         public void ExportToEpub(string exportToLocation)
         {
-            retrieveAndExport.ExportToEpub(listOfPages, exportToLocation);
+            retrieveAndExport.ExportToEpub(requestFilePath, exportToLocation);
         }
 
     }
