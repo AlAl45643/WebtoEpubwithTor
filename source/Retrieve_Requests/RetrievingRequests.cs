@@ -1,11 +1,39 @@
 ﻿using System.IO.Compression;
 using System.Text.RegularExpressions;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 namespace source.Retrieve_Requests
 {
     public class RetrievingRequests
     {
+        /// <summary>
+        /// Return FirefoxDriver using Tor Browser.
+        /// </summary>
+        /// <returns><c>FirefoxDriver</c></returns>
+        public FirefoxDriver SeleniumedTorBrowser()
+        {
+            string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string torDirectory = Path.Combine(homeDirectory, ".wet", "tor-browser");
+            string profilePath = Path.Combine([torDirectory, "Browser", "TorBrowser", "Data", "Browser", "profile.default"]);
+            string binaryPath = Path.Combine(torDirectory, "Browser", "firefox");
+            string geckoDriverPath = Path.Combine(torDirectory, "geckodriver");
+
+            FirefoxDriverService firefoxDriverService = FirefoxDriverService.CreateDefaultService(geckoDriverPath);
+            firefoxDriverService.FirefoxBinaryPath = binaryPath;
+            firefoxDriverService.BrowserCommunicationPort = 2828;
+
+            FirefoxOptions firefoxOptions = new()
+            {
+                LogLevel = FirefoxDriverLogLevel.Fatal
+            };
+            firefoxOptions.AddArguments("-profile", profilePath);
+            firefoxOptions.SetPreference("marionette.debugging.clicktostart", false);
+            firefoxOptions.SetPreference("torbrowser.settings.quickstart.enabled", true);
+
+            FirefoxDriver FirefoxDriver = new FirefoxDriver(firefoxDriverService, firefoxOptions, TimeSpan.FromSeconds(180));
+            return FirefoxDriver;
+        }
 
         /// <summary>
         /// Retrieve links from webpage according to regex pattern.
@@ -13,14 +41,14 @@ namespace source.Retrieve_Requests
         /// <returns><c>Page[]</c></returns>
         public void RetrieveLinks(string requestFilePath, string link, Regex regex)
         {
-            SeleniumedTorBrowser seleniumedTorBrowser = new();
+            FirefoxDriver driver = SeleniumedTorBrowser();
             StreamWriter requestFile = File.AppendText(requestFilePath);
-            using (seleniumedTorBrowser.FirefoxDriver)
+            using (driver)
             {
-                WaitForTorConnection(seleniumedTorBrowser);
-                seleniumedTorBrowser.FirefoxDriver.Navigate().GoToUrl(link);
-                WaitForBlockers(seleniumedTorBrowser);
-                var elements = seleniumedTorBrowser.FirefoxDriver.FindElements(By.TagName("a"));
+                WaitForTorConnection(driver);
+                driver.Navigate().GoToUrl(link);
+                WaitForBlockers(driver);
+                var elements = driver.FindElements(By.TagName("a"));
                 foreach (var element in elements)
                 {
                     var href = element.GetAttribute("href");
@@ -43,11 +71,11 @@ namespace source.Retrieve_Requests
         /// </summary>
         public void ExportToEpub(string requestFilePath, string exportToPath)
         {
-            SeleniumedTorBrowser seleniumedTorBrowser = new();
-            List<string> listOfPages = new();
-            using (seleniumedTorBrowser.FirefoxDriver)
+            FirefoxDriver driver = SeleniumedTorBrowser();
+            List<string> listOfPages = [];
+            using (driver)
             {
-                WaitForTorConnection(seleniumedTorBrowser);
+                WaitForTorConnection(driver);
                 IEnumerable<string> lines = File.ReadLines(requestFilePath);
                 foreach (string line in lines)
                 {
@@ -55,9 +83,9 @@ namespace source.Retrieve_Requests
                     {
                         continue;
                     }
-                    seleniumedTorBrowser.FirefoxDriver.Navigate().GoToUrl(line);
-                    WaitForBlockers(seleniumedTorBrowser);
-                    listOfPages.Add(seleniumedTorBrowser.FirefoxDriver.FindElement(By.TagName("body")).Text);
+                    driver.Navigate().GoToUrl(line);
+                    WaitForBlockers(driver);
+                    listOfPages.Add(driver.FindElement(By.TagName("body")).Text);
                 }
             }
             File.Delete(requestFilePath);
@@ -65,31 +93,30 @@ namespace source.Retrieve_Requests
         }
 
         /// <summary>
+        /// Wait until tor browser has established a connection.
+        /// </summary>
+        private void WaitForTorConnection(FirefoxDriver driver)
+        {
+            WebDriverWait wait = new(driver, TimeSpan.FromSeconds(180));
+            _ = wait.Until(i =>
+            {
+                return driver.Title == "";
+            });
+        }
+
+        /// <summary>
         /// Check if our request has been blocked by anything. If so, wait for user input.
         /// </summary>
-        public void WaitForBlockers(SeleniumedTorBrowser seleniumedTorBrowser)
+        public void WaitForBlockers(FirefoxDriver driver)
         {
-            Func<IWebDriver, bool> consent = NoInformationConsentForm;
-            Func<IWebDriver, bool> cloudflare = NoCloudflareCaptcha;
-            List<Func<IWebDriver, bool>> conditions = new() { consent, cloudflare };
-            WebDriverWait wait = new(seleniumedTorBrowser.FirefoxDriver, TimeSpan.FromSeconds(180));
+            List<Func<IWebDriver, bool>> conditions = new() { NoInformationConsentForm, NoCloudflareCaptcha, NoCloudflareCaptcha2 };
+            WebDriverWait wait = new(driver, TimeSpan.FromSeconds(180));
             foreach (Func<IWebDriver, bool> condition in conditions)
             {
                 wait.Until(condition);
             }
         }
 
-        /// <summary>
-        /// Wait until tor browser has established a connection.
-        /// </summary>
-        private void WaitForTorConnection(SeleniumedTorBrowser seleniumedTorBrowser)
-        {
-            WebDriverWait wait = new(seleniumedTorBrowser.FirefoxDriver, TimeSpan.FromSeconds(180));
-            _ = wait.Until(i =>
-            {
-                return seleniumedTorBrowser.FirefoxDriver.Title == "";
-            });
-        }
 
         /// <summary>
         /// Returns false if Information Consent Form is visible.
@@ -107,6 +134,15 @@ namespace source.Retrieve_Requests
         private bool NoCloudflareCaptcha(IWebDriver driver)
         {
             return driver.FindElements(By.Id("chk-hdr")).Count == 0;
+        }
+
+        /// <summary>
+        /// Returns false if Cloudflare Captcha is visible
+        /// </summary>
+        /// <returns><c>bool</c></returns>
+        private bool NoCloudflareCaptcha2(IWebDriver driver)
+        {
+            return driver.FindElements(By.Id("JdYY6")).Count == 0;
         }
 
         /// <summary>
@@ -168,7 +204,7 @@ namespace source.Retrieve_Requests
                 using (ZipArchive zipArchive = new ZipArchive(zipFile, ZipArchiveMode.Create))
                 {
                     // mimetype file must come first and be uncompressed according to epub specifications
-                    zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype" , CompressionLevel.NoCompression);
+                    _ = zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype", CompressionLevel.NoCompression);
                     RecursiveEntry(zipArchive, pathToEpubRoot, "");
                 }
             }
@@ -189,7 +225,7 @@ namespace source.Retrieve_Requests
                     RecursiveEntry(zipArchive, entry, newPathInZip);
                     continue;
                 }
-                zipArchive.CreateEntryFromFile(entry, Path.Combine(pathInZip, entryFileName));
+                _ = zipArchive.CreateEntryFromFile(entry, Path.Combine(pathInZip, entryFileName));
             }
             return;
         }

@@ -32,7 +32,10 @@ namespace source.Create_Requests
             {
                 Directory.CreateDirectory(wetDirectory);
             }
-            File.Create(requestFilePath).Dispose();
+            if (!File.Exists(requestFilePath))
+            {
+                File.Create(requestFilePath).Dispose();
+            }
 
             retrieveAndExport = new();
             this.requestFilePath = requestFilePath;
@@ -53,12 +56,10 @@ namespace source.Create_Requests
         /// </summary>
         public void Print()
         {
-            IEnumerable<string> lines = File.ReadLines(requestFilePath);
-            int i = 0;
-            foreach (string line in lines)
+            string[] lines = File.ReadAllLines(requestFilePath);
+            for (int i = 0; i < lines.Length; i++)
             {
-                Console.WriteLine($"{i}: {line}");
-                i++;
+                Console.WriteLine($"{i}: {lines[i]}");
             }
 
         }
@@ -68,39 +69,25 @@ namespace source.Create_Requests
         /// </summary>
         public void Print(int start, int end)
         {
-            IEnumerable<string> lines = File.ReadLines(requestFilePath);
+            string[] lines = File.ReadAllLines(requestFilePath);
             if (end > lines.Count() || start < 0 || start > end)
             {
                 return;
             }
-
-            int i = 0;
-            foreach (string line in lines)
+            for (int i = start; i < end; i++)
             {
-                if (i < start)
-                {
-                    i++;
-                    continue;
-                }
-
-                if (i > end)
-                {
-                    break;
-                }
-
-                Console.WriteLine($"{i}: {line}");
-                i++;
+                Console.WriteLine($"{i}: {lines[i]}");
             }
         }
 
         /// <summary>
         /// Remove page at index.
         /// </summary>
-        public void Remove(int index)
+        public void RemoveAt(int index)
         {
-            string[] lines = File.ReadAllLines(requestFilePath);
-            lines[index].Remove(0);
-
+            List<string> lines = [.. File.ReadAllLines(requestFilePath)];
+            lines.RemoveAt(index);
+            File.WriteAllLines(requestFilePath, lines);
         }
 
         /// <summary>
@@ -108,8 +95,9 @@ namespace source.Create_Requests
         /// </summary>
         public void Add(int index, string link)
         {
-            string[] lines = File.ReadAllLines(requestFilePath);
-            lines[index].Insert(0, link);
+            List<string> lines = [.. File.ReadAllLines(requestFilePath)];
+            lines.Insert(index, link);
+            File.WriteAllLines(requestFilePath, lines);
         }
 
         /// <summary>
@@ -117,14 +105,26 @@ namespace source.Create_Requests
         /// </summary>
         public void Reverse()
         {
-            string[] lines = File.ReadAllLines(requestFilePath);
+            List<string> lines = [.. File.ReadAllLines(requestFilePath)];
             lines.Reverse();
+            File.WriteAllLines(requestFilePath, lines);
+        }
+
+        /// <summary>
+        /// Remove links in list from index begin to index end.
+        /// </summary>
+        public void RemoveFrom(int begin, int end)
+        {
+            List<string> lines = [.. File.ReadAllLines(requestFilePath)];
+            int count = end - begin;
+            lines.RemoveRange(begin, count);
+            File.WriteAllLines(requestFilePath, lines);
         }
 
         /// <summary>
         /// Assemble epub from each Page.HTML in List<Page> to exportToLocation.
         /// </summary>
-        public void ExportToEpub(string exportToLocation)
+        public void ExportRequest(string exportToLocation)
         {
             retrieveAndExport.ExportToEpub(requestFilePath, exportToLocation);
         }
