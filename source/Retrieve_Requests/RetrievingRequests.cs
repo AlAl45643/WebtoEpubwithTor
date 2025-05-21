@@ -7,33 +7,48 @@ namespace source.Retrieve_Requests
 {
     public class RetrievingRequests
     {
+
         /// <summary>
-        /// Return FirefoxDriver using Tor Browser.
+        /// Exposes the service provided by the tor browser.
         /// </summary>
-        /// <returns><c>FirefoxDriver</c></returns>
-        public FirefoxDriver SeleniumedTorBrowser()
+        private readonly FirefoxDriverService firefoxDriverService;
+
+        /// <summary>
+        /// The options to set for tor browser.
+        /// </summary>
+        private readonly FirefoxOptions firefoxOptions;
+
+        /// <summary>
+        /// Constructor to set log level for tor browser.
+        /// </summary>
+        public RetrievingRequests(bool trace)
         {
+
             string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string torDirectory = Path.Combine(homeDirectory, ".wet", "tor-browser");
             string profilePath = Path.Combine([torDirectory, "Browser", "TorBrowser", "Data", "Browser", "profile.default"]);
             string binaryPath = Path.Combine(torDirectory, "Browser", "firefox");
             string geckoDriverPath = Path.Combine(torDirectory, "geckodriver");
 
-            FirefoxDriverService firefoxDriverService = FirefoxDriverService.CreateDefaultService(geckoDriverPath);
+            firefoxDriverService = FirefoxDriverService.CreateDefaultService(geckoDriverPath);
             firefoxDriverService.FirefoxBinaryPath = binaryPath;
             firefoxDriverService.BrowserCommunicationPort = 2828;
 
-            FirefoxOptions firefoxOptions = new()
+            firefoxOptions = new();
+            if (trace)
             {
-                LogLevel = FirefoxDriverLogLevel.Fatal
-            };
+                firefoxOptions.LogLevel = FirefoxDriverLogLevel.Trace;
+            }
+            else
+            {
+                firefoxOptions.LogLevel = FirefoxDriverLogLevel.Fatal;
+            }
             firefoxOptions.AddArguments("-profile", profilePath);
             firefoxOptions.SetPreference("marionette.debugging.clicktostart", false);
             firefoxOptions.SetPreference("torbrowser.settings.quickstart.enabled", true);
 
-            FirefoxDriver FirefoxDriver = new FirefoxDriver(firefoxDriverService, firefoxOptions, TimeSpan.FromSeconds(180));
-            return FirefoxDriver;
         }
+
 
         /// <summary>
         /// Retrieve links from webpage according to regex pattern.
@@ -41,14 +56,14 @@ namespace source.Retrieve_Requests
         /// <returns><c>Page[]</c></returns>
         public void RetrieveLinks(string requestFilePath, string link, Regex regex)
         {
-            FirefoxDriver driver = SeleniumedTorBrowser();
+            FirefoxDriver torBrowser = new(firefoxDriverService, firefoxOptions, TimeSpan.FromSeconds(180));
             StreamWriter requestFile = File.AppendText(requestFilePath);
-            using (driver)
+            using (torBrowser)
             {
-                WaitForTorConnection(driver);
-                driver.Navigate().GoToUrl(link);
-                WaitForBlockers(driver);
-                var elements = driver.FindElements(By.TagName("a"));
+                WaitForTorConnection(torBrowser);
+                torBrowser.Navigate().GoToUrl(link);
+                WaitForBlockers(torBrowser);
+                var elements = torBrowser.FindElements(By.TagName("a"));
                 foreach (var element in elements)
                 {
                     var href = element.GetAttribute("href");
@@ -71,11 +86,11 @@ namespace source.Retrieve_Requests
         /// </summary>
         public void ExportToEpub(string requestFilePath, string exportToPath)
         {
-            FirefoxDriver driver = SeleniumedTorBrowser();
+            FirefoxDriver torBrowser = new(firefoxDriverService, firefoxOptions, TimeSpan.FromSeconds(180));
             List<string> listOfPages = [];
-            using (driver)
+            using (torBrowser)
             {
-                WaitForTorConnection(driver);
+                WaitForTorConnection(torBrowser);
                 IEnumerable<string> lines = File.ReadLines(requestFilePath);
                 foreach (string line in lines)
                 {
@@ -83,9 +98,9 @@ namespace source.Retrieve_Requests
                     {
                         continue;
                     }
-                    driver.Navigate().GoToUrl(line);
-                    WaitForBlockers(driver);
-                    listOfPages.Add(driver.FindElement(By.TagName("body")).Text);
+                    torBrowser.Navigate().GoToUrl(line);
+                    WaitForBlockers(torBrowser);
+                    listOfPages.Add(torBrowser.FindElement(By.TagName("body")).Text);
                 }
             }
             File.Delete(requestFilePath);

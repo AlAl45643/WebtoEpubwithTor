@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using System.Diagnostics;
 using source.Create_Requests;
-
 namespace tests
 {
     [TestFixture]
@@ -11,9 +10,10 @@ namespace tests
         /// <summary>
         /// Checks if CreatingRequests.RequestLinks retrieves links correctly.
         /// </summary>
-        public void Are_links_retrieved_correctly()
+        public void AreLinksRetrievedCorrectly()
         {
-            CreatingRequests creatingRequests = new("request");
+            CreatingRequests creatingRequests = new("request", false);
+            creatingRequests.Clear();
 
             string currentWorkingDirectory = Directory.GetCurrentDirectory();
             string mainWebpageStub = "file://" + Path.Combine(currentWorkingDirectory, "resources", "MainWebpageStub.html");
@@ -27,20 +27,21 @@ namespace tests
             Assert.That(tempRequestActualResult.SequenceEqual(tempRequestExpectedResult));
         }
 
+
         [Test]
         /// <summary>
         /// Checks if CreatingRequests.ExportToEpub produces a valid epub with epubcheck.jar
         /// </summary>
-        public void Check_if_epub_is_valid()
+        public void CheckIfEpubIsValid()
         {
             string currentWorkingDirectory = Directory.GetCurrentDirectory();
             string mainWebpageStub = "file://" + Path.Combine(currentWorkingDirectory, "resources", "MainWebpageStub.html");
             Regex regex = new("chapter");
-            CreatingRequests creatingRequests = new("request");
+            CreatingRequests creatingRequests = new("request", false);
             creatingRequests.RequestLinks(mainWebpageStub, regex);
 
             string epubPath = Path.Combine("resources", "test.epub");
-            creatingRequests.ExportToEpub(epubPath);
+            creatingRequests.ExportRequest(epubPath);
 
             string pathToEpubValidator = Path.Combine(currentWorkingDirectory, "resources", "epubcheck-5.2.1", "epubcheck.jar");
             Process epubValidatorProcess = new Process
@@ -68,9 +69,9 @@ namespace tests
         /// <summary>
         /// Check if CreatingRequests.RetrieveLinks waits for user to bypass blockers such as captchas or consent forms.
         /// </summary>
-        public void Does_RetrieveLinks_wait_for_blockers(string site)
+        public void DoesRetrieveLinksWaitForBlockers(string site)
         {
-            CreatingRequests creatingRequest = new("temp");
+            CreatingRequests creatingRequest = new("temp", false);
 
             Regex regex = new("");
             creatingRequest.RequestLinks(site, regex);
@@ -82,10 +83,11 @@ namespace tests
         /// <summary>
         /// Checks if typical use of the WET runs without encountering any errors.
         /// </summary>
-        public void Does_WET_run_correctly()
+        public void DoesWETRunCorrectly()
         {
-            CreatingRequests creatingRequests = new("temp");
+            CreatingRequests creatingRequests = new("temp", false);
 
+            CreatingRequests.ListRequests();
             Regex regex = new("chapter");
             creatingRequests.RequestLinks("https://hiraethtranslation.com/novel/the-speedrun-manual-of-miss-witch/", regex);
             creatingRequests.Print();
@@ -93,7 +95,7 @@ namespace tests
             creatingRequests.RemoveAt(213);
             creatingRequests.Reverse();
             creatingRequests.Print();
-            creatingRequests.ExportToEpub("./epub.epub");
+            creatingRequests.ExportRequest("./epub.epub");
 
             Assert.That(true);
 

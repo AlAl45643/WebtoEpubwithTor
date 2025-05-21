@@ -22,7 +22,7 @@ namespace source.Create_Requests
         /// <summary>
         /// Construct class with retrieveAndExport backend and name for request.
         /// </summary>
-        public CreatingRequests(string requestFileName)
+        public CreatingRequests(string requestFileName, bool trace)
         {
             string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string wetDirectory = Path.Combine(homeDirectory, ".wet");
@@ -37,7 +37,7 @@ namespace source.Create_Requests
                 File.Create(requestFilePath).Dispose();
             }
 
-            retrieveAndExport = new();
+            retrieveAndExport = new(trace);
             this.requestFilePath = requestFilePath;
         }
 
@@ -119,6 +119,28 @@ namespace source.Create_Requests
             int count = end - begin;
             lines.RemoveRange(begin, count);
             File.WriteAllLines(requestFilePath, lines);
+        }
+
+        /// <summary>
+        /// Clears all links in the request.
+        /// </summary>
+        public void Clear()
+        {
+            File.WriteAllText(requestFilePath, string.Empty);
+        }
+
+        /// <summary>
+        /// Lists all requests created.
+        /// </summary>
+        public static void ListRequests()
+        {
+            string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            string wetDirectory = Path.Combine(homeDirectory, ".wet");
+            IEnumerable<string> requests = Directory.EnumerateFiles(wetDirectory);
+            foreach (string request in requests)
+            {
+                Console.WriteLine(Path.GetFileName(request));
+            }
         }
 
         /// <summary>
