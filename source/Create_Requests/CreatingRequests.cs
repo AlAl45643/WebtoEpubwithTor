@@ -30,7 +30,7 @@ namespace source.Create_Requests
 
             if (!Directory.Exists(wetDirectory))
             {
-                Directory.CreateDirectory(wetDirectory);
+                _ = Directory.CreateDirectory(wetDirectory);
             }
             if (!File.Exists(requestFilePath))
             {
@@ -65,12 +65,12 @@ namespace source.Create_Requests
         }
 
         /// <summary>
-        /// Display list of page hyperlinks from start to end.
+        /// Display list of page hyperlinks from <paramref name="start"/> to <paramref name="end"/>.
         /// </summary>
         public void Print(int start, int end)
         {
             string[] lines = File.ReadAllLines(requestFilePath);
-            if (end > lines.Count() || start < 0 || start > end)
+            if (end > lines.Length || start < 0 || start > end)
             {
                 return;
             }
@@ -81,7 +81,7 @@ namespace source.Create_Requests
         }
 
         /// <summary>
-        /// Remove page at index.
+        /// Remove link at <paramref name="index"/>.
         /// </summary>
         public void RemoveAt(int index)
         {
@@ -91,7 +91,7 @@ namespace source.Create_Requests
         }
 
         /// <summary>
-        /// Add page at index.
+        /// Add link at <paramref name="index"/>.
         /// </summary>
         public void Add(int index, string link)
         {
@@ -101,7 +101,7 @@ namespace source.Create_Requests
         }
 
         /// <summary>
-        /// Reverse list of pages so that index 0 becomes index n and index n becomes index 0.
+        /// Reverse request file so that index 0 becomes index n and index n becomes index 0.
         /// </summary>
         public void Reverse()
         {
@@ -111,7 +111,7 @@ namespace source.Create_Requests
         }
 
         /// <summary>
-        /// Remove links in list from index begin to index end.
+        /// Remove links in list from index <paramref name="begin"/> to index <paramref name="end"/>.
         /// </summary>
         public void RemoveFrom(int begin, int end)
         {
@@ -144,7 +144,7 @@ namespace source.Create_Requests
         }
 
         /// <summary>
-        /// Assemble epub from each Page.HTML in List<Page> to exportToLocation.
+        /// Assemble epub from each link in request to <paramref name="exportToLocation"/>.
         /// </summary>
         public void ExportRequest(string exportToLocation)
         {

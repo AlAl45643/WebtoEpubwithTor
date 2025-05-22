@@ -82,7 +82,7 @@ namespace source.Retrieve_Requests
         }
 
         /// <summary>
-        /// Retrieve PageContent for each Hyperlink in List<Page>. PageContent retrieved is the visible text in <body> </body>.
+        /// Export epub from each link in <paramref name="requestFilePath"/> at <paramref name="exportToPath"/>.
         /// </summary>
         public void ExportToEpub(string requestFilePath, string exportToPath)
         {
@@ -110,7 +110,7 @@ namespace source.Retrieve_Requests
         /// <summary>
         /// Wait until tor browser has established a connection.
         /// </summary>
-        private void WaitForTorConnection(FirefoxDriver driver)
+        private static void WaitForTorConnection(FirefoxDriver driver)
         {
             WebDriverWait wait = new(driver, TimeSpan.FromSeconds(180));
             _ = wait.Until(i =>
@@ -161,77 +161,183 @@ namespace source.Retrieve_Requests
         }
 
         /// <summary>
-        /// Exports an epub by first converting HTML to XHTML, second creating content.opf and toc.ncx according to epub specification, and finally zipping up the arranged folder with a .epub extension. Epub is created in exportToPath from each Page.HTML in listOfPages.
+        /// Exports an epub by first converting webpage HTML to XHTML for each chapter, second creating content.opf and toc.ncx according to epub specification, and finally zipping up the arranged folder with a .epub extension. Epub is created in <paramref name="exportToPath"/> from each page in <paramref name="pages"/>
         /// </summary>
-        private void ExportToEpub(List<string> pages, string exportToPath)
+        private static void ExportToEpub(List<string> pages, string exportToPath)
         {
             string currentDirectory = Directory.GetCurrentDirectory();
             string pathToEpubContent = Path.Combine(currentDirectory, "resources", "epub", "OEBPS");
             string epubUID = $"WET/{DateTime.Now}";
 
-            // create xhtml chapters in pathToEpubContent
+            WriteEpubChapters(pages, pathToEpubContent);
+
+            string contentopfPath = Path.Combine(pathToEpubContent, "content.opf");
+            WriteContentOPF(pages, epubUID, contentopfPath);
+
+            string tocncxPath = Path.Combine(pathToEpubContent, "toc.ncx");
+            WriteToxNCX(pages, epubUID, tocncxPath);
+
+            string pathToEpubRoot = Path.Combine(currentDirectory, "resources", "epub");
+            CreateEpub(exportToPath, currentDirectory, pathToEpubRoot);
+        }
+
+
+        /// <summary>
+        /// Write toc.ncx at <paramref name="tocnxPath"/> referencing each page in <paramref name="pages"/> with <paramref name="epubUID"/>
+        /// </summary>
+        private static void WriteToxNCX(List<string> pages, string epubUID, string tocnxPath)
+        {
+            using StreamWriter tocncxStream = new(tocnxPath);
+            tocncxStream.Write($"""
+                                        <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+                                        <ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">
+
+                                        <head>
+                                            <meta name=\"dtb:epubUID\" content=\"{epubUID}\"/>
+                                            <meta name=\"dtb:depth\" content=\"1\"/>
+                                            <meta name=\"dtb:totalPageCount\" content=\"0\"/>
+                                            <meta name=\"dtb:maxPageNumber\" content=\"0\"/>
+                                        </head>
+
+                                        <docTitle>
+                                            <text>WET</text>
+                                        </docTitle>
+
+                                        <navMap>
+                                        """);
+
+            for (int i = 0; i < pages.Count; i++)
+            {
+                tocncxStream.Write($"""
+                                            <navPoint id=\"page{i + 1}\" playOrder=\"{i + 1}\">
+                                                <navLabel>
+                                                <text>Chapter {i + 1}</text>
+                                            </navLabel>
+                                            <content src=\"{i + 1}.xhtml\"/>
+                                        </navPoint>
+                                        """);
+            }
+
+            tocncxStream.Write($"""
+                                        </navMap>
+                                        </ncx>
+                                        """);
+        }
+
+        /// <summary>
+        /// Write i.xhtml for each pages at <paramref name="pathToEpubContent"/>.
+        /// </summary>
+        private static void WriteEpubChapters(List<string> pages, string pathToEpubContent)
+        {
             for (int i = 0; i < pages.Count; i++)
             {
                 string chapterFilePath = Path.Combine(pathToEpubContent, $"{i + 1}.xhtml");
-                File.WriteAllText(chapterFilePath, $"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">\n<head>\n    <title>{i + 1}</title>\n</head>\n<body>\n<p>{pages[i]}</p>\n</body>\n</html>");
-            }
+                File.Create(chapterFilePath).Close();
+                using StreamWriter chapterFileStream = File.AppendText(chapterFilePath);
+                chapterFileStream.Write($"""
+                                                   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+                                                   <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
+                                                   <html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">
+                                                   <head>
+                                                       <title>{i + 1}</title>
+                                                   </head>
+                                                       <body>
+                                                   """);
 
-            // create content.opf in pathToEpubContent
-            string contentopfPath = Path.Combine(pathToEpubContent, "content.opf");
-            using (StreamWriter contentopfStream = new(contentopfPath))
-            {
-                contentopfStream.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookID\" version=\"2.0\">\n   <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">\n        <dc:title>WET</dc:title>\n        <dc:creator opf:role=\"aut\">WET</dc:creator>\n        <dc:language>en-US</dc:language>\n        <dc:rights>Public Domain</dc:rights>\n        <dc:publisher>WET</dc:publisher>\n        <dc:identifier id=\"BookID\" opf:scheme=\"UUID\">{epubUID}</dc:identifier>\n    </metadata>\n    <manifest>\n        <item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />\n");
-
-                for (int i = 0; i < pages.Count; i++)
+                string[] chapterLines = pages[i].Split(
+                    [Environment.NewLine],
+                    StringSplitOptions.None
+                );
+                foreach (string line in chapterLines)
                 {
-                    contentopfStream.Write($"      <item id=\"page{i + 1}\" href=\"{i + 1}.xhtml\" media-type=\"application/xhtml+xml\" />\n");
+                    chapterFileStream.WriteLine($"""
+                                                       <p>{line}</p>
+                                                   """);
                 }
 
-                contentopfStream.Write($"    </manifest>\n    <spine toc=\"ncx\">\n");
-
-                for (int i = 0; i < pages.Count; i++)
-                {
-                    contentopfStream.Write($"       <itemref idref=\"page{i + 1}\" />\n");
-                }
-
-                contentopfStream.Write($"    </spine>\n</package>");
-            }
-
-            // creat toc.ncx in pathToEpubContent
-            string tocncx = Path.Combine(pathToEpubContent, "toc.ncx");
-            using (StreamWriter tocncxStream = new(tocncx))
-            {
-                tocncxStream.Write($"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">\n\n<head>\n    <meta name=\"dtb:epubUID\" content=\"{epubUID}\"/>    <meta name=\"dtb:depth\" content=\"1\"/>\n    <meta name=\"dtb:totalPageCount\" content=\"0\"/>\n    <meta name=\"dtb:maxPageNumber\" content=\"0\"/>\n</head>\n\n<docTitle>\n    <text>WET</text>\n</docTitle>\n\n<navMap>\n");
-
-                for (int i = 0; i < pages.Count; i++)
-                {
-                    tocncxStream.Write($"    <navPoint id=\"page{i + 1}\" playOrder=\"{i + 1}\">\n        <navLabel>\n        <text>Chapter {i + 1}</text>\n    </navLabel>\n    <content src=\"{i + 1}.xhtml\"/>\n</navPoint>\n");
-                }
-
-                tocncxStream.Write("\n\n</navMap>\n</ncx>");
-            }
-
-            // an epub file is just a zip with a .epub extension
-            string pathToEpubRoot = Path.Combine(currentDirectory, "resources", "epub");
-            string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
-            using (FileStream zipFile = new FileStream(exportToPath, FileMode.Create))
-            {
-                using (ZipArchive zipArchive = new ZipArchive(zipFile, ZipArchiveMode.Create))
-                {
-                    // mimetype file must come first and be uncompressed according to epub specifications
-                    _ = zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype", CompressionLevel.NoCompression);
-                    RecursiveEntry(zipArchive, pathToEpubRoot, "");
-                }
+                chapterFileStream.Write($"""
+                                                       </body>
+                                                   </html>
+                                                   """);
             }
         }
 
         /// <summary>
-        /// Add entries in 'directory' to 'archive' as 'pathInZip' recursively if entry is a directory.
+        /// Create content.opf at <paramref name="contentopfPath"/> that references each page in <paramref name="pages"/> with <paramref name="epubUID"/>.
         /// </summary>
-        private void RecursiveEntry(ZipArchive zipArchive, string directory, string pathInZip)
+        private static void WriteContentOPF(List<string> pages, string epubUID, string contentopfPath)
         {
-            var entries = Directory.EnumerateFileSystemEntries(directory);
-            foreach (var entry in entries)
+            using StreamWriter contentopfStream = new(contentopfPath);
+            contentopfStream.Write($"""
+                                        <?xml version=\"1.0\" encoding=\"UTF-8\"?>
+                                        <package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookID\" version=\"2.0\">
+                                           <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">
+                                                <dc:title>WET</dc:title>
+                                                <dc:creator opf:role=\"aut\">WET</dc:creator>
+                                                <dc:language>en-US</dc:language>
+                                                <dc:rights>Public Domain</dc:rights>
+                                                <dc:publisher>WET</dc:publisher>
+                                                <dc:identifier id=\"BookID\" opf:scheme=\"UUID\">{epubUID}</dc:identifier>
+                                            </metadata>
+                                            <manifest>
+                                              <item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />
+                                        """);
+
+            for (int i = 0; i < pages.Count; i++)
+            {
+                contentopfStream.Write($"""
+                                              <item id=\"page{i + 1}\" href=\"{i + 1}.xhtml\" media-type=\"application/xhtml+xml\" />
+                                        """);
+            }
+
+            contentopfStream.Write($"""
+                                            </manifest>
+                                            <spine toc=\"ncx\">
+                                        """);
+
+            for (int i = 0; i < pages.Count; i++)
+            {
+                contentopfStream.Write($"""
+                                               <itemref idref=\"page{i + 1}\" />
+                                        """);
+            }
+
+            contentopfStream.Write($"""
+                                            </spine>
+                                        </package>
+                                        """);
+        }
+
+        /// <summary>
+        /// Create epub at <paramref name="exportToPath"/> by zipping the <paramref name="pathToEpubRoot"/> at <paramref name="currentDirectory"/> according to epub specification.
+        /// </summary>
+        private static void CreateEpub(string exportToPath, string currentDirectory, string pathToEpubRoot)
+        {
+            try
+            {
+                using FileStream zipFile = new(exportToPath, FileMode.Create);
+                using ZipArchive zipArchive = new(zipFile, ZipArchiveMode.Create);
+                string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
+                // mimetype file must come first and be uncompressed according to epub specifications
+                _ = zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype", CompressionLevel.NoCompression);
+                RecursiveEntry(zipArchive, pathToEpubRoot, "");
+            }
+            finally
+            {
+                Directory.Delete(pathToEpubRoot, true);
+            }
+        }
+
+
+
+
+        /// <summary>
+        /// Add entries in <paramref name="directory"/> to <paramref name="zipArchive"/> as <paramref name="pathInZip"/> recursively if entry is a directory.
+        /// </summary>
+        private static void RecursiveEntry(ZipArchive zipArchive, string directory, string pathInZip)
+        {
+            IEnumerable<string> entries = Directory.EnumerateFileSystemEntries(directory);
+            foreach (string entry in entries)
             {
                 string entryFileName = Regex.Match(entry, "(?!.*[\\/]).*").Value;
                 if (File.GetAttributes(entry).HasFlag(FileAttributes.Directory))
