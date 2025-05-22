@@ -38,6 +38,7 @@ namespace tests
             string mainWebpageStub = "file://" + Path.Combine(currentWorkingDirectory, "resources", "MainWebpageStub.html");
             Regex regex = new("chapter");
             CreatingRequests creatingRequests = new("request", false);
+            creatingRequests.Clear();
             creatingRequests.RequestLinks(mainWebpageStub, regex);
 
             string epubPath = Path.Combine("resources", "test.epub");
@@ -88,18 +89,18 @@ namespace tests
             CreatingRequests creatingRequests = new("temp", false);
 
             CreatingRequests.ListRequests();
-            Regex regex = new("chapter");
+            Regex regex = new("chapter-");
+            creatingRequests.Clear();
             creatingRequests.RequestLinks("https://hiraethtranslation.com/novel/the-speedrun-manual-of-miss-witch/", regex);
-            creatingRequests.Print();
-            creatingRequests.RemoveAt(212);
-            creatingRequests.RemoveAt(213);
             creatingRequests.Reverse();
+            creatingRequests.RemoveFrom(2, 231);
             creatingRequests.Print();
             creatingRequests.ExportRequest("./epub.epub");
 
             Assert.That(true);
 
         }
+
 
     }
 }
