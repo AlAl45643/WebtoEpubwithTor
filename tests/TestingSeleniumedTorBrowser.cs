@@ -23,7 +23,7 @@ namespace tests
             string homeDirectory = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
             string tempRequestPath = Path.Combine(homeDirectory, ".wet", "request");
             string[] tempRequestActualResult = File.ReadAllLines(tempRequestPath);
-            string[] tempRequestExpectedResult = [$"file://{currentWorkingDirectory}/resources/chapter-1.html", $"file://{currentWorkingDirectory}/resources/chapter-2.html"];
+            string[] tempRequestExpectedResult = [new Uri($"file://{currentWorkingDirectory}/resources/chapter-1.html").ToString(), new Uri($"file://{currentWorkingDirectory}/resources/chapter-2.html").ToString()];
             Assert.That(tempRequestActualResult.SequenceEqual(tempRequestExpectedResult));
         }
 
@@ -57,7 +57,7 @@ namespace tests
                 }
             };
             string epubValidatorResult = "";
-            epubValidatorProcess.Start();
+            _ = epubValidatorProcess.Start();
             while (!epubValidatorProcess.StandardOutput.EndOfStream)
             {
                 epubValidatorResult += epubValidatorProcess.StandardOutput.ReadLine();

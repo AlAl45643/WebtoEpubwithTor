@@ -28,7 +28,7 @@ namespace source.Retrieve_Requests
             string torDirectory = Path.Combine(homeDirectory, ".wet", "tor-browser");
             string profilePath = Path.Combine([torDirectory, "Browser", "TorBrowser", "Data", "Browser", "profile.default"]);
             string binaryPath = Path.Combine(torDirectory, "Browser", "firefox");
-            string geckoDriverPath = Path.Combine(torDirectory, "geckodriver");
+            string geckoDriverPath = Path.Combine(torDirectory);
 
             firefoxDriverService = FirefoxDriverService.CreateDefaultService(geckoDriverPath);
             firefoxDriverService.FirefoxBinaryPath = binaryPath;
