@@ -189,14 +189,14 @@ namespace source.Retrieve_Requests
         {
             using StreamWriter tocncxStream = new(tocnxPath);
             tocncxStream.Write($"""
-                                        <?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                                        <ncx xmlns=\"http://www.daisy.org/z3986/2005/ncx/\" version=\"2005-1\">
+                                        <?xml version="1.0" encoding="UTF-8"?>
+                                        <ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">
 
                                         <head>
-                                            <meta name=\"dtb:epubUID\" content=\"{epubUID}\"/>
-                                            <meta name=\"dtb:depth\" content=\"1\"/>
-                                            <meta name=\"dtb:totalPageCount\" content=\"0\"/>
-                                            <meta name=\"dtb:maxPageNumber\" content=\"0\"/>
+                                            <meta name="dtb:epubUID" content="{epubUID}"/>
+                                            <meta name="dtb:depth" content="1"/>
+                                            <meta name="dtb:totalPageCount" content="0"/>
+                                            <meta name="dtb:maxPageNumber" content="0"/>
                                         </head>
 
                                         <docTitle>
@@ -209,11 +209,11 @@ namespace source.Retrieve_Requests
             for (int i = 0; i < pages.Count; i++)
             {
                 tocncxStream.Write($"""
-                                            <navPoint id=\"page{i + 1}\" playOrder=\"{i + 1}\">
+                                            <navPoint id="page{i + 1}" playOrder="{i + 1}">
                                                 <navLabel>
                                                 <text>Chapter {i + 1}</text>
                                             </navLabel>
-                                            <content src=\"{i + 1}.xhtml\"/>
+                                            <content src="{i + 1}.xhtml"/>
                                         </navPoint>
                                         """);
             }
@@ -235,9 +235,9 @@ namespace source.Retrieve_Requests
                 File.Create(chapterFilePath).Close();
                 using StreamWriter chapterFileStream = File.AppendText(chapterFilePath);
                 chapterFileStream.Write($"""
-                                                   <?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                                                   <!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">
-                                                   <html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">
+                                                   <?xml version="1.0" encoding="UTF-8"?>
+                                                   <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+                                                   <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
                                                    <head>
                                                        <title>{i + 1}</title>
                                                    </head>
@@ -269,36 +269,36 @@ namespace source.Retrieve_Requests
         {
             using StreamWriter contentopfStream = new(contentopfPath);
             contentopfStream.Write($"""
-                                        <?xml version=\"1.0\" encoding=\"UTF-8\"?>
-                                        <package xmlns=\"http://www.idpf.org/2007/opf\" unique-identifier=\"BookID\" version=\"2.0\">
-                                           <metadata xmlns:dc=\"http://purl.org/dc/elements/1.1/\" xmlns:opf=\"http://www.idpf.org/2007/opf\">
+                                        <?xml version="1.0" encoding="UTF-8"?>
+                                        <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="BookID" version="2.0">
+                                           <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
                                                 <dc:title>WET</dc:title>
-                                                <dc:creator opf:role=\"aut\">WET</dc:creator>
+                                                <dc:creator opf:role="aut">WET</dc:creator>
                                                 <dc:language>en-US</dc:language>
                                                 <dc:rights>Public Domain</dc:rights>
                                                 <dc:publisher>WET</dc:publisher>
-                                                <dc:identifier id=\"BookID\" opf:scheme=\"UUID\">{epubUID}</dc:identifier>
+                                                <dc:identifier id="BookID" opf:scheme="UUID">{epubUID}</dc:identifier>
                                             </metadata>
                                             <manifest>
-                                              <item id=\"ncx\" href=\"toc.ncx\" media-type=\"application/x-dtbncx+xml\" />
+                                              <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml" />
                                         """);
 
             for (int i = 0; i < pages.Count; i++)
             {
                 contentopfStream.Write($"""
-                                              <item id=\"page{i + 1}\" href=\"{i + 1}.xhtml\" media-type=\"application/xhtml+xml\" />
+                                              <item id="page{i + 1}" href="{i + 1}.xhtml" media-type="application/xhtml+xml" />
                                         """);
             }
 
             contentopfStream.Write($"""
                                             </manifest>
-                                            <spine toc=\"ncx\">
+                                            <spine toc="ncx">
                                         """);
 
             for (int i = 0; i < pages.Count; i++)
             {
                 contentopfStream.Write($"""
-                                               <itemref idref=\"page{i + 1}\" />
+                                               <itemref idref="page{i + 1}" />
                                         """);
             }
 
