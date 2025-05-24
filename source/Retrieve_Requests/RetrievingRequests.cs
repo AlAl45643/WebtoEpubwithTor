@@ -178,7 +178,15 @@ namespace source.Retrieve_Requests
             WriteToxNCX(pages, epubUID, tocncxPath);
 
             string pathToEpubRoot = Path.Combine(currentDirectory, "resources", "epub");
-            CreateEpub(exportToPath, currentDirectory, pathToEpubRoot);
+            try
+            {
+                CreateEpub(exportToPath, currentDirectory, pathToEpubRoot);
+            }
+            finally
+            {
+                Directory.Delete(pathToEpubContent, true);
+                Directory.CreateDirectory(pathToEpubContent);
+            }
         }
 
 
@@ -313,22 +321,13 @@ namespace source.Retrieve_Requests
         /// </summary>
         private static void CreateEpub(string exportToPath, string currentDirectory, string pathToEpubRoot)
         {
-            try
-            {
-                using FileStream zipFile = new(exportToPath, FileMode.Create);
-                using ZipArchive zipArchive = new(zipFile, ZipArchiveMode.Create);
-                string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
-                // mimetype file must come first and be uncompressed according to epub specifications
-                _ = zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype", CompressionLevel.NoCompression);
-                RecursiveEntry(zipArchive, pathToEpubRoot, "");
-            }
-            finally
-            {
-                Directory.Delete(pathToEpubRoot, true);
-            }
+            using FileStream zipFile = new(exportToPath, FileMode.Create);
+            using ZipArchive zipArchive = new(zipFile, ZipArchiveMode.Create);
+            string pathToMimetypeFile = Path.Combine(currentDirectory, "resources", "mimetype");
+            // mimetype file must come first and be uncompressed according to epub specifications
+            _ = zipArchive.CreateEntryFromFile(pathToMimetypeFile, "mimetype", CompressionLevel.NoCompression);
+            RecursiveEntry(zipArchive, pathToEpubRoot, "");
         }
-
-
 
 
         /// <summary>
@@ -339,7 +338,7 @@ namespace source.Retrieve_Requests
             IEnumerable<string> entries = Directory.EnumerateFileSystemEntries(directory);
             foreach (string entry in entries)
             {
-                string entryFileName = Regex.Match(entry, "(?!.*[\\/]).*").Value;
+                string entryFileName = Path.GetFileName(entry);
                 if (File.GetAttributes(entry).HasFlag(FileAttributes.Directory))
                 {
                     string newPathInZip = Path.Combine(pathInZip, entryFileName);
