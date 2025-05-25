@@ -341,7 +341,8 @@ namespace source.Retrieve_Requests
                 string entryFileName = Path.GetFileName(entry);
                 if (File.GetAttributes(entry).HasFlag(FileAttributes.Directory))
                 {
-                    string newPathInZip = Path.Combine(pathInZip, entryFileName);
+                    // forward slash is required in epubs for both platforms
+                    string newPathInZip = $"{pathInZip}/{entryFileName}";
                     RecursiveEntry(zipArchive, entry, newPathInZip);
                     continue;
                 }
