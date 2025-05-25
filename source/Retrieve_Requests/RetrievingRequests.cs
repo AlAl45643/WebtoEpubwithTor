@@ -346,7 +346,7 @@ namespace source.Retrieve_Requests
                     RecursiveEntry(zipArchive, entry, newPathInZip);
                     continue;
                 }
-                _ = zipArchive.CreateEntryFromFile(entry, Path.Combine(pathInZip, entryFileName));
+                _ = zipArchive.CreateEntryFromFile(entry, $"{pathInZip}/{entryFileName}");
             }
             return;
         }
