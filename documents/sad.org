@@ -7,7 +7,7 @@ Software Architecture Document
 |             1.2 | TR3: Selenium Deanonymization removed due to mitigation being too difficult;                                                   | May 12, 2025 |
 
 * Introduction and Goals
-This SAD describes the design of the Web to Epub with Tor Software (WET). This WET shall automate the task of compiling referenced webpages within a website into a Electronic Publication (EPUB). The goal of the WET project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
+This SAD describes the design of the WebtoEpubwithTor software (WET). This WET shall automate the task of exporting referenced webpages within a website into a Electronic Publication (EPUB). The goal of the WET project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
 
 ** Requirements Overview
 Table 1. General Requirements
@@ -36,15 +36,16 @@ Table 3. Stakeholders
 
 * Architecture Constraints
 Table 4. Software and Programming Constraints
-| ID  | Constraint                                                                                                           | Background and / or motivation                                                            |
-|-----+----------------------------------------------------------------------------------------------------------------------+-------------------------------------------------------------------------------------------|
-| TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                 |
+| ID  | Constraint                                                                                                           | Background and / or motivation                                                             |
+|-----+----------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------|
+| TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                  |
 | TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure. |
 
 Table 5. Operating System Constraints
-| ID  | Constraint                                        | Explanation                                            |
-|-----+---------------------------------------------------+--------------------------------------------------------|
-| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with the Fedora Workstation Edition OS.
+| ID  | Constraint                                        | Explanation                                                                  |
+|-----+---------------------------------------------------+------------------------------------------------------------------------------|
+| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with Fedora Workstation Edition OS. |
+| TC4 | Windows 10 (latest) Compatibility                 | The application should be compatible with Windows 10 OS.                 |
 
 * Context and Scope
 ** Business Context
@@ -70,9 +71,9 @@ Table 5. Operating System Constraints
   @enduml
 #+End_SRC
 
-#+RESULTS:
 [[file:./B-1.png]]
 
+Table 6. Business Context Description
 | Actor                                   | Description                                                                                                                                           |
 |-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------|
 | User                                    | User that requests an epub assembled from a collection of webpages which are referenced within another webpage(s).                                    |
@@ -104,18 +105,18 @@ Table 5. Operating System Constraints
   @enduml
 #+END_SRC
 
-#+RESULTS:
 [[file:./B-2.png]]
-Table 6. Technical Context Description
-| Actor                                  | Description                                                                                                                                       |
-|----------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------|
-| <<Application>> Command-Line Interface | A command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                                                      |
-| <<System>> WET                         | Our system that is controlled by a CLI which retrieves requested webpages through a tor relay.                                                    |
-| <<Protocol>> Tor relay                 | A protocol that transmits encrypted traffic anonymously by routing it through relays which make it difficult to trace the origin of information . |
+
+Table 7. Technical Context Description
+| Actor                                   | Description                                                                                                                                       |
+|-----------------------------------------+---------------------------------------------------------------------------------------------------------------------------------------------------|
+| <<Application>> Command-Line Interface  | A command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                                                      |
+| <<System>> WET                          | Our system that is controlled by a CLI which retrieves requested webpages through a tor relay.                                                    |
+| <<Protocol>> Tor relay                  | A protocol that transmits encrypted traffic anonymously by routing it through relays which make it difficult to trace the origin of information . |
 | <<Category>> <<Host>> Requested Webpage | Webpages requested by the user. May not be available either due to not existing or being blocked by the host.                                     |
 
 * Solution Strategy
-Table 7. Solution Strategy Approach
+Table 8. Solution Strategy Approach
 | Quality Goal                      | Solution Approach                                                                                | Link to Details |
 |-----------------------------------+--------------------------------------------------------------------------------------------------+-----------------|
 | Usability (75% Site Acessibility) | Imitate user browsing by scraping through a web browser and handover to user to bypass captchas. | [[*Cloudflare]]     |
@@ -136,8 +137,8 @@ Table 7. Solution Strategy Approach
   component "WET" as wet <<system>> {
           portin "Command Input/Output" as comm
           portout "Internet Port" as internet
-          component "Retrieve Requests" as retrieve <<subsystem>>
-          component "Create Requests" as request <<subsystem>>
+          component "Retrieve Requests" as retrieve <<module>>
+          component "Create Requests" as request <<module>>
 
           comm --> request
           retrieve -up-> request
@@ -151,61 +152,16 @@ Table 7. Solution Strategy Approach
   @enduml
 #+END_SRC
 
-#+RESULTS:
 [[file:./B-3.png]]
-Table 8. Building Block View Level 1 Description
-| Actor                           | Description                                                                                        |
-| <<subsystem>> Create Requests   | Responsible for assembling the list of links that will be sent to <<subsystem>> Retrieve Requests. |
-| <<subsystem>> Retrieve Requests | Responsible for retrieving the webpages requested from <<subsystem>> Create Requests.              |
-| Command Input/Output            | Port for command input and command oupt through a Command-Line Interface.                          |
-| Internet Port                   | Port for content requested from internet.                                                          |
-** Level 2
-*** Retrieve Requests
-#+BEGIN_SRC plantuml :file ./B-4.png
-  @startuml
-  skinparam shadowing true
-  skinparam defaulttextalignment center
-  skinparam participantstereotypefontsize 13
-  skinparam footerfontsize 15
-  skinparam footerFontColor black
-  skinparam folderstereotypefontsize 13
 
+Table 9. Building Block View Level 1 Description
 
-
-  circle "Create Requests" as req
-  circle "Internet Port" as internet
-
-  component "Retrieve Requests" as retrieve <<subsystem>> {
-          component "Retrieving Links" as links <<module>>
-          component "Retrieving Webpages" as pages <<module>>
-          component "Seleniumed Tor Browser" as sel <<module>>
-
-          portin " " as request
-          portout "Tor Protocol" as tor
-
-          req --> request
-          tor --> internet
-
-          request --> links
-          request --> pages
-
-          links --> sel
-          pages --> sel
-
-          sel --> tor
-  }
-
-  center footer "**Building Block View - Level 2: Retrieve Requests**"
-  @enduml
-#+END_SRC
-
-#+RESULTS:
-[[file:./B-4.png]]
-Table 9. Building Block View Level 2 Description
-| Actor                        | Description                                                              |
-|------------------------------+--------------------------------------------------------------------------|
-| <<module>> Retrieve Links    | Retrieves referenced links within a webpage based on user given pattern. |
-| <<module>> Retrieve Webpages | Retrieves webpages and assembles them into an epub based on user given list. |
+| Actor                        | Description                                                                                     |
+|------------------------------+-------------------------------------------------------------------------------------------------|
+| <<module>> Create Requests   | Responsible for assembling the list of links that will be sent to <<module>> Retrieve Requests. |
+| <<module>> Retrieve Requests | Responsible for retrieving the links and webpages requested from <<module>> Create Requests.    |
+| Command Input/Output         | Port for command input and command output through a Command-Line Interface.                     |
+| Internet Port                | Port for content requested from internet.                                                       |
 
 * Runtime View
 ** Typical Runtime View
@@ -220,8 +176,8 @@ Table 9. Building Block View Level 2 Description
   skinparam folderstereotypefontsize 13
 
   participant "Client" as client
-  participant "Create Requests" as request <<subsystem>>
-  participant "Retrieve Requests" as retrieve <<subsystem>>
+  participant "Create Requests" as request <<module>>
+  participant "Retrieve Requests" as retrieve <<module>>
 
   client -> request : "RequestLinks(link, regex)"
   activate client
@@ -232,14 +188,14 @@ Table 9. Building Block View Level 2 Description
                   deactivate request
           deactivate retrieve
 
-          client -> request : "DisplayList()"
+          client -> request : "Print()"
           activate request
                   request --> client
-                  client -> request : "Delete(index)"
-                  client -> request : "DisplayList()"
+                  client -> request : "Remove(index)"
+                  client -> request : "Print()"
                   request --> client
-                  client -> request : "ExportToEpub()"
-                  request -> retrieve : "ExportToEpub(arrayOfPages)"
+                  client -> request : "ExportRequest(exportToLocation)"
+                  request -> retrieve : "ExportToEpub(requestFilePath, exportToPath)"
                   activate retrieve
                   deactivate request
           deactivate retrieve
@@ -249,7 +205,7 @@ Table 9. Building Block View Level 2 Description
   @enduml
 #+END_SRC
 
-#+RESULTS:
+
 [[file:./B-5.png]]
 
 A plausible runtime view that an average user may run would be:
@@ -273,7 +229,7 @@ A plausible runtime view that an average user may run would be:
   client -> request : "RequestLinks(link, regex)"
   activate client
           activate request
-                  request -> retrieve : "RetrieveLinks(link, regex)"
+                  request -> retrieve : "RetrieveLinks(requestFilePath, link, regex)"
                   activate retrieve
                           retrieve --> request
                           retrieve -> client : "solve captcha"
@@ -282,11 +238,11 @@ A plausible runtime view that an average user may run would be:
           deactivate retrieve
 
 
-          client -> request : "DisplayList()"
+          client -> request : "Print()"
           activate request
                   request --> client
-                  client -> request : "ExportToEpub()"
-                  request -> retrieve : "ExportToEpub(arrayOfPages)"
+                  client -> request : "ExportRequest(exportToLocation)"
+                  request -> retrieve : "ExportToEpub(requestFilePath, exportToPath)"
                   activate retrieve
                   deactivate request
                   retrieve -> client : "solve captcha(s)"
@@ -299,7 +255,7 @@ A plausible runtime view that an average user may run would be:
   center footer "**Runtime View: Captcha**"
 #+END_SRC
 
-#+RESULTS:
+
 [[file:./B-6.png]]
 
 A special but common runtime view would be a website requesting a captcha to access its contents. It would need to be handled by:
@@ -352,10 +308,9 @@ A special but common runtime view would be a website requesting a captcha to acc
   center footer "**Deployment View Diagram for WET**"
 #+END_SRC
 
-#+RESULTS:
 [[file:./B-7.png]]
 
-Table 10. Deployment View Description
+Table 11. Deployment View Description
 | Actor                               | Description                                                                                                        |
 |-------------------------------------+--------------------------------------------------------------------------------------------------------------------|
 | <<Device>> Linux-PC                 | Personal computer that is running a linux operating system such as Fedora Workstation Edition.                     |
@@ -366,22 +321,6 @@ Table 10. Deployment View Description
 | output.epub                         | Requested webpages assorted into an epub.
 
 * Cross-cutting Concepts
-** Domain Model
-The most important data structure is the Page object. The Page object stores information about a webpage including its hyperlink and HTML. The Page object requires both of these variables to exist and be valid at instantiation.
-
-#+BEGIN_SRC plantuml :file ./B-8.png
-  @startuml
-  struct Page {
-          String hyperlink
-          [Replace] pageContent
-  }
-
-  @enduml
-#+END_SRC
-
-#+RESULTS:
-[[file:./B-8.png]]
-
 ** Cloudflare
 The key problem in creating any webscraper is bypassing site protections that prevent scrapers from accessing a site. These site protections are typically implemented by content delivery networks (CDN). One popular CDN is Cloudflare which connects approximately 10% of all websites.
 
@@ -392,8 +331,7 @@ To bypass such methods we need to identify the common link between them, which i
 + Emulate user browsing behavior
 + Fallback to the user when we are stumped
 
-** TODO [Input Code Example Here]
-
+file:../tests/TestingSeleniumedTorBrowser.cs:69
 ** Tor Relays
 Achieving our anonymity quality requires us to implement measures when accessing the web. These measures include using Tor Relays to access webpages.
 
@@ -408,7 +346,7 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 * Architecture Decisions
 ** Tor Browser
 25/03/02
-Table 11. Architecture Decision 1 Description
+Table 12. Architecture Decision 1 Description
 | Section      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 |--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Title        | ADR 1: Anonymity with Tor Browser.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
