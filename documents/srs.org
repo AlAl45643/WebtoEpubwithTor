@@ -84,7 +84,7 @@ AS-2: The requested website references the needed webpages.
 The User can create a list of pages by scanning a webpage with a pattern. Priority = High
 
 *** Functional Requirements
-| RetrievingRequests.New: | Creating a List                                    |
+| CreatingRequests.New: | Creating a List                                    |
 |-------------------------+----------------------------------------------------|
 | .RequestName:           | The WET shall prompt the User for a request name. |
 | .Link:                  | The WET shall prompt the User for a valid link.    |
@@ -97,30 +97,35 @@ A User can create, view, add, remove, switch, and reverse the links in a list. P
 
 *** Functional Requirements
 
-| CreatingRequests.Print: | Viewing the list of pages from .Start to .Stop |
-|-------------------------+------------------------------------------------|
+| CreatingRequests.Print: | Viewing the list of pages from .Start to .Stop    |
+|-------------------------+---------------------------------------------------|
 | .RequestName:           | The WET shall prompt the User for a request name. |
 
-| CreatingRequests.Print: | Viewing the list of pages from .Begin to .End                         |
+
+| CreatingRequests.Print: | Viewing the list of pages from .Begin to .End                                  |
 |-------------------------+--------------------------------------------------------------------------------|
-| .RequestName:           | The WET shall prompt the User for a request name. |
+| .RequestName:           | The WET shall prompt the User for a request name.                              |
 | .Begin:                 | The User shall specify a starting index of the range of links to be displayed. |
-| .End:                  | The User shall specify a stopping index of the range of links to be displayed. |
+| .End:                   | The User shall specify a stopping index of the range of links to be displayed. |
+
 
 | CreatingRequests.Add: | Adding .Link at .Index                                                       |
 |-----------------------+------------------------------------------------------------------------------|
-| .RequestName:           | The WET shall prompt the User for a request name. |
+| .RequestName:         | The WET shall prompt the User for a request name.                            |
 | .Link:                | The WET shall prompt the User for a valid link.                              |
 | .Index:               | The WET shall prompt the User for a valid index for the link to be added to. |
 
+
 | CreatingRequests.RemoveAt: | Removing a link at .Index                                      |
-|--------------------------+----------------------------------------------------------------|
-| .RequestName:           | The WET shall prompt the User for a request name. |
-| .Index:                  | The WET shall take a valid index to remove a link in the list. |
+|----------------------------+----------------------------------------------------------------|
+| .RequestName:              | The WET shall prompt the User for a request name.              |
+| .Index:                    | The WET shall take a valid index to remove a link in the list. |
+
 
 | CreatingRequests.Reverse | Reverse the list of pages.                        |
 |--------------------------+---------------------------------------------------|
 | .RequestName:            | The WET shall prompt the User for a request name. |
+
 
 | CreatingRequests.RemoveFrom | Removing links from .Start to                                                          |
 |-----------------------------+----------------------------------------------------------------------------------------|
