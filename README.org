@@ -1,0 +1,47 @@
+* Introduction
+WebtoEpubwithTor (WET) is an internet scraper for web novels that automates the task of retrieving chapters referenced within a table of contents webpage and exporting them to an epub. Compared to other similar tools this project uses Tor Browser which enhances the anonymity of the scraper ensuring that the scraped site does not know the user.
+
+The WET uses Spectre.Console.Cli to expose a command line interface, Selenium.Webdriver to automate Tor Browser, and GeckoDriver to implement the WebDriver specification so Selenium.WebDriver can interact with firefox-based browsers.
+* Installation
+** Linux
+1. Create a folder named .wet in your home folder. Ex: /home/yourusername/.wet/
+2. Download the compatible Tor Browser for your system at https://www.torproject.org/download/, extract the tar.xz file, open the tor-browser-linux... folder, and then move the tor-browser folder into the .wet folder.
+3. Download the compatible Geckodriver for your system at https://github.com/mozilla/geckodriver/releases, extract the tar.gz file, open the geckodriver folder, and move the geckodriver executable to the tor-browser folder inside the .wet folder.
+4. Download the compatible WebtoEpubWithTor for your system at https://github.com/AlAl45643/WebtoEpubwithTor/releases/tag/v1.0.0, extract the zip file, and run the WebtoEpubWithTor executable from the command line with $ ./WebtoEpubWithTor.
+** Windows
+1. Create a folder named .wet in your home folder. Ex: C:\Users\yourusername\.wet\
+2. Download the compatible Tor Browser at https://www.torproject.org/download/, run the installer, set your destination folder to C:\Users\yourusername\.wet\tor-browser, and then install.
+3. Download the compatible Geckodriver for your system at https://github.com/mozilla/geckodriver/releases, extract the zip file, open the geckodriver folder, and move the geckodriver executable to the tor-browser folder inside the .wet folder.
+4. Download the compatible WebtoEpubWithTor executable at https://github.com/AlAl45643/WebtoEpubwithTor/releases/tag/v1.0.0, extract the zip file, and run the WebtoEpubWithTor executable from the command line with > WebtoEpubWithTor.
+* Example
+#+begin_example
+$ ./WebtoEpubWithTor new myRequest https://yournovelsite.com/novel/ chapter
+$ ./WebtoEpubWithTor print myRequest
+0: https://yournovelsite.com/novel/chapter-8
+1: https://yournovelsite.com/novel/chapter-7
+2: https://yournovelsite.com/novel/chapter-6
+3: https://yournovelsite.com/novel/chapter-5
+4: https://yournovelsite.com/novel/chapter-4
+5: https://yournovelsite.com/novel/chapter-3
+6: https://yournovelsite.com/novel/chapter-2
+7: https://yournovelsite.com/novel/chapter-1
+$ ./WebtoEpubWithTor reverse myRequest
+$ ./WebtoEpubWithTor print myRequest
+0: https://yournovelsite.com/novel/chapter-1
+1: https://yournovelsite.com/novel/chapter-2
+2: https://yournovelsite.com/novel/chapter-3
+3: https://yournovelsite.com/novel/chapter-4
+4: https://yournovelsite.com/novel/chapter-5
+5: https://yournovelsite.com/novel/chapter-6
+6: https://yournovelsite.com/novel/chapter-7
+7: https://yournovelsite.com/novel/chapter-8
+$ ./WebtoEpubWithTor removeFrom myRequest 6 8
+$ ./WebtoEpubWithTor print myRequest
+0: https://yournovelsite.com/novel/chapter-1
+1: https://yournovelsite.com/novel/chapter-2
+2: https://yournovelsite.com/novel/chapter-3
+3: https://yournovelsite.com/novel/chapter-4
+4: https://yournovelsite.com/novel/chapter-5
+5: https://yournovelsite.com/novel/chapter-6
+$ ./WebtoEpubWithTor exportRequest myRequest /home/work/Downloads/novel.epub
+#+end_example
