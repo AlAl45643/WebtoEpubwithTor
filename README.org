@@ -1,7 +1,7 @@
 * Introduction
 WebtoEpubwithTor (WET) is an internet scraper for web novels that automates the task of retrieving chapters referenced within a table of contents webpage and exporting them to an epub. Compared to other similar tools this project uses Tor Browser which enhances the anonymity of the scraper ensuring that the scraped site does not know the user.
 
-The WET uses Spectre.Console.Cli to expose a command line interface, Selenium.Webdriver to automate Tor Browser, and GeckoDriver to implement the WebDriver specification so Selenium.WebDriver can interact with firefox-based browsers.
+WebtoEpubwithTor (WET) uses Spectre.Console.Cli to expose a command line interface, Selenium.Webdriver to automate Tor Browser, and GeckoDriver to implement the WebDriver specification so Selenium.WebDriver can interact with firefox-based browsers.
 * Installation
 ** Linux
 1. Create a folder named .wet in your home folder. Ex: /home/yourusername/.wet/
