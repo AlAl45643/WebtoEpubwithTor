@@ -6,17 +6,18 @@ Software Requirement Specification
 |             1.1 | Images now export to relative file paths                                                     | Apr 30, 2025 |
 |             1.2 | Changed names for functional requirements in System Features; Added CreatingRequests.Reverse | May 5, 2025  |
 |             1.3 | Removed .Confirm from RetrievingRequests.ExportToEpub                                        | May 12, 2025 |
+|             1.4 | Sentence revisions; Added CreatingRequests.RemoveFrom; Removed Data Requirements section;    | May 27, 2025 |
 
 * Introduction
 ** Purpose
-This SRS describes the functional and nonfunctional requirements for the Web to EPUB with Tor Software (WET).
+This SRS describes the functional and nonfunctional requirements for the WebtoEpubwithTor (WET) software.
 
 ** Product Scope
-The WET will combine a selection of referenced web pages within a website into an electronic publication.
+The WET will export user selected web pages linked within a main webpage into an electronic publication.
 
 * Product Overview
 ** Product Perspective
-The Web to Epub with Tor Software is a replacement for downloading and converting web pages especially web novels. The context diagram in Figure A-1 illustrates the external entities and system interfaces for release 1.0.
+The WET is a replacement for downloading and converting web pages manually. The context diagram in Figure A-1 illustrates the external entities and system interfaces for release 1.0.
 
 #+BEGIN_SRC plantuml :file ./A-1.png
   @startuml
@@ -37,14 +38,12 @@ The Web to Epub with Tor Software is a replacement for downloading and convertin
   center footer "**Context Diagram**"
   @enduml
 #+End_SRC
-
-#+RESULTS:
 [[file:./A-1.png]]
 
-| User Class     | Description                                                    |
-|----------------+----------------------------------------------------------------|
-| User           | A user that wants to create an EPUB of assembled webpages.     |
-| WET            | Our system that retrieves and assembles webpages for the EPUB. |
+| User Class     | Description                                                       |
+|----------------+-------------------------------------------------------------------|
+| User           | A user that wants to create an EPUB of selected webpages.         |
+| WET            | Our system that retrieves and assembles webpages into an EPUB.    |
 | Webpage Hoster | A hoster that holds the webpages that the user wants to retrieve. |
 
 
@@ -62,14 +61,16 @@ PF-5: The product shall export the completed EPUB file to the user's preferred f
 
 ** User Characteristics
 
-| User Classes | Description                                                                                                                                                                                              |
-|--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| User         | The user provides the website to be scanned for hyperlinks, the matching pattern to scan with, and the order the webpages shall be assembled in. The User will then recieve the completed epub in his default directory. |
+| User Classes | Description                                                                                                                                                                                                                |
+|--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| User         | The User provides the website to be scanned for hyperlinks, the matching pattern to scan with, and the order the webpages shall be assembled in. The User will then recieve the completed epub in his specified directory. |
 
 ** Operating Environment
-OE-1: The WET shall operate correctly with the following web browsing suite: Tor (latest version).
+OE-1: The WET shall operate correctly with the following web browsing suite: Tor Browser (latest version).
 
-OE-2: The WET shall operate correctly with the Fedora Workstation Edition OS (latest version) atleast.
+OE-2: The WET shall operate correctly with Fedora Workstation Edition OS (latest version). 
+
+OE-3: The WET shall operate correctly with Windows 10 OS (latest version).
 
 ** Assumptions and Dependencies
 AS-1: The requested website and referenced webpages are accessible.
@@ -83,10 +84,11 @@ AS-2: The requested website references the needed webpages.
 The User can create a list of pages by scanning a webpage with a pattern. Priority = High
 
 *** Functional Requirements
-| RetrievingRequests.Links: | Creating a List                                    |
-|---------------------------+----------------------------------------------------|
-| .Link:                    | The WET shall prompt the User for a valid link.    |
-| .Pattern:                 | The WET shall prompt the User for a valid pattern. |
+| RetrievingRequests.New: | Creating a List                                    |
+|-------------------------+----------------------------------------------------|
+| .RequestName:           | The WET shall prompt the User for a request name. |
+| .Link:                  | The WET shall prompt the User for a valid link.    |
+| .Pattern:               | The WET shall prompt the User for a valid pattern. |
 
 ** View, Modify, and Delete Links in List
 
@@ -95,25 +97,36 @@ A User can create, view, add, remove, switch, and reverse the links in a list. P
 
 *** Functional Requirements
 
-| CreatingRequests.Print | View all of the list of pages |
+| CreatingRequests.Print: | Viewing the list of pages from .Start to .Stop |
+|-------------------------+------------------------------------------------|
+| .RequestName:           | The WET shall prompt the User for a request name. |
 
-
-| CreatingRequests.Print: | Viewing the list of pages from .Start to .Stop                                 |
+| CreatingRequests.Print: | Viewing the list of pages from .Begin to .End                         |
 |-------------------------+--------------------------------------------------------------------------------|
-| .Start:                 | The User shall specify a starting index of the range of links to be displayed. |
-| .Stop:                  | The User shall specify a stopping index of the range of links to be displayed. |
+| .RequestName:           | The WET shall prompt the User for a request name. |
+| .Begin:                 | The User shall specify a starting index of the range of links to be displayed. |
+| .End:                  | The User shall specify a stopping index of the range of links to be displayed. |
 
 | CreatingRequests.Add: | Adding .Link at .Index                                                       |
 |-----------------------+------------------------------------------------------------------------------|
+| .RequestName:           | The WET shall prompt the User for a request name. |
 | .Link:                | The WET shall prompt the User for a valid link.                              |
 | .Index:               | The WET shall prompt the User for a valid index for the link to be added to. |
 
-| CreatingRequests.Remove: | Removing a link at .Index                                      |
+| CreatingRequests.RemoveAt: | Removing a link at .Index                                      |
 |--------------------------+----------------------------------------------------------------|
+| .RequestName:           | The WET shall prompt the User for a request name. |
 | .Index:                  | The WET shall take a valid index to remove a link in the list. |
 
+| CreatingRequests.Reverse | Reverse the list of pages.                        |
+|--------------------------+---------------------------------------------------|
+| .RequestName:            | The WET shall prompt the User for a request name. |
 
-| CreatingRequests.Reverse | Reverse the list of pages. |
+| CreatingRequests.RemoveFrom | Removing links from .Start to                                                          |
+|-----------------------------+----------------------------------------------------------------------------------------|
+| .RequestName:               | The WET shall prompt the User for a request name.                                      |
+| .Begin:                     | The User shall specify an inclusive starting index for a range of links to be removed. |
+| .End:                       | The User shall specify an exclusive stopping index for a range of links to be removed. |
 
 ** Export to Epub
 
@@ -121,27 +134,9 @@ A User can create, view, add, remove, switch, and reverse the links in a list. P
 A User can save the content of webpages in a list, export the content into one continuous epub, and save it in their preferred folder. Priority = High
 
 *** Functional Requirements
-| RetrievingRequests.Webpages: | Exporting the list into an Epub                                     |
-|-----------------------------+---------------------------------------------------------------------|
-| .Location                   | The User shall specify the location for the Epub to be exported to. |
-
-* Data Requirements
-** Logical Data Model
-#+BEGIN_SRC plantuml :file ./A-2.png
-  @startuml
-  entity Page {
-  }
-
-  @enduml
-#+END_SRC
-
-#+RESULTS:
-[[file:./A-2.png]]
-
-** Data Dictionary
-| Data element | Description                                            | Composition or data type   |
-|--------------+--------------------------------------------------------+----------------------------|
-| Page         | An entity containing a link to a page and its content. | + hyperlink + page content |
+| CreatingRequests.ExportRequest: | Exporting the list into an Epub                                     |
+|---------------------------------+---------------------------------------------------------------------|
+| .Location                       | The User shall specify the location for the Epub to be exported to. |
 
 * External Interface Requirements
 ** User Interfaces
@@ -156,4 +151,4 @@ USE-1: The WET shall be able to access atleast 75 of the top 100 novels at [[htt
 ** Anonymity Requirements
 SEC-1: All internet acesses shall be routed through tor circuits.
 
-SEC-2: The system shall use a new tor circuit for each set of webpages requested to be scanned.
+SEC-2: The system shall request a new tor circuit for each set of webpages to be scanned.
