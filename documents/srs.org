@@ -141,6 +141,7 @@ A User can save the content of webpages in a list, export the content into one c
 *** Functional Requirements
 | CreatingRequests.ExportRequest: | Exporting the list into an Epub                                     |
 |---------------------------------+---------------------------------------------------------------------|
+| .RequestName:                   | The WET shall prompt the User for a request name.                   |
 | .Location                       | The User shall specify the location for the Epub to be exported to. |
 
 * External Interface Requirements
