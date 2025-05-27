@@ -43,5 +43,5 @@ $ ./WebtoEpubWithTor print myRequest
 3: https://yournovelsite.com/novel/chapter-4
 4: https://yournovelsite.com/novel/chapter-5
 5: https://yournovelsite.com/novel/chapter-6
-$ ./WebtoEpubWithTor exportRequest myRequest /home/work/Downloads/novel.epub
+$ ./WebtoEpubWithTor exportRequest myRequest /home/username/Downloads/novel.epub
 #+end_example
