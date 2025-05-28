@@ -152,7 +152,7 @@ UI-2: The system shall provide a help command to explain how to use the system.
 
 * Quality Attributes
 ** Functionality Requirements
-USE-1: The WET shall be able to access atleast 75 of the top 100 novels at [[https://www.novelupdates.com/series-ranking/][a site for cataloging community translations for eastern web novels.]]
+USE-1: The WET shall be able to access atleast 7 of the top 10 novels at [[https://www.novelupdates.com/series-ranking/][a site for cataloging community translations for eastern web novels.]]
 
 ** Anonymity Requirements
 SEC-1: All internet acesses shall be routed through tor circuits.
