@@ -1,11 +1,24 @@
 Software Architecture Document
 * Changelog
-| Version Release | Major Changes                                                                                                                                                                                                                                                                                                                                         | Date         |
-|-----------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------|
-|             1.0 | Initial release of the document                                                                                                                                                                                                                                                                                                                       | Mar 21, 2025 |
-|             1.1 | Images now export to relative file path; Seleniumed Tor Browser module added to Building Block Level 2; Name changes for items                                                                                                                                                                                                                        | Apr 30, 2025 |
-|             1.2 | TR3: Selenium Deanonymization removed due to mitigation being too difficult;                                                                                                                                                                                                                                                                          | May 12, 2025 |
-|             1.3 | Sentence revisions; Added Windows 10 Compatibility Constraint; Changed Table 7. <<subsystem>> to <<module>>; Removed Building Block Level 2; Fixed runtime view function names; Removed Domain Model section; Linked cloudflare fallback behavior test case; Added revised Architecture Decision 4; Changed manual HTML to XHTML as mitigation to TR3 | May 27, 2025 |
+| Version Release | Major Changes                                                                                                                                                                                                                                                                                                                                           | Date         |
+|-----------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+--------------|
+|             1.0 | Initial release of the document                                                                                                                                                                                                                                                                                                                         | Mar 21, 2025 |
+|             1.1 | Images now export to relative file path; Seleniumed Tor Browser module added to Building Block Level 2; Name changes for items                                                                                                                                                                                                                          | Apr 30, 2025 |
+|             1.2 | TR3: Selenium Deanonymization removed due to mitigation being too difficult;                                                                                                                                                                                                                                                                            | May 12, 2025 |
+|             1.3 | Sentence revisions; Added Windows 10 Compatibility Constraint; Changed Table 7. <<subsystem>> to <<module>>; Removed Building Block Level 2; Updated runtime view function names; Removed Domain Model section; Linked cloudflare fallback behavior test case; Added revised Architecture Decision 4; Changed manual HTML to XHTML as mitigation to TR3 | May 27, 2025 |
+
+* Architecture Constraints
+Table 4. Software and Programming Constraints
+| ID  | Constraint                                                                                                           | Background and / or motivation                                                             |
+|-----+----------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------|
+| TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                  |
+| TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure. |
+
+Table 5. Operating System Constraints
+| ID  | Constraint                                        | Explanation                                                                  |
+|-----+---------------------------------------------------+------------------------------------------------------------------------------|
+| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with Fedora Workstation Edition OS. |
+| TC4 | Windows 10 (latest) Compatibility                 | The application should be compatible with Windows 10 OS.                 |
 
 * Introduction and Goals
 This SAD describes the design of the WebtoEpubwithTor software (WET). This WET shall automate the task of exporting referenced webpages within a website into a Electronic Publication (EPUB). The goal of the WET project is to save time by automating a routine task, ensure anonymity when retrieving content, and showcase the developers' skill.
@@ -34,19 +47,6 @@ Table 3. Stakeholders
 | Users     | Looking to automate a repetitive task anonymously. |
 | Employers | Understand the developers' skill.                  |
 | Ali Ali   | Showcase and improve his skills, also a user.      |
-
-* Architecture Constraints
-Table 4. Software and Programming Constraints
-| ID  | Constraint                                                                                                           | Background and / or motivation                                                             |
-|-----+----------------------------------------------------------------------------------------------------------------------+--------------------------------------------------------------------------------------------|
-| TC1 | Implementation in C#                                                                                                 | The application should showcase the developers' C# skill.                                  |
-| TC2 | Third party software must be available under an compatible open source license and installable via a package manager | The source code must be open for examination to guarentee the users information is secure. |
-
-Table 5. Operating System Constraints
-| ID  | Constraint                                        | Explanation                                                                  |
-|-----+---------------------------------------------------+------------------------------------------------------------------------------|
-| TC3 | Fedora Workstation Edition (latest) Compatibility | The application should be compatible with Fedora Workstation Edition OS. |
-| TC4 | Windows 10 (latest) Compatibility                 | The application should be compatible with Windows 10 OS.                 |
 
 * Context and Scope
 ** Business Context
@@ -77,7 +77,7 @@ Table 5. Operating System Constraints
 Table 6. Business Context Description
 | Actor                                   | Description                                                                                                                                           |
 |-----------------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------|
-| User                                    | User that requests an epub assembled from a collection of webpages which are referenced within another webpage(s).                                    |
+| User                                    | User that requests an epub assembled from a collection of webpages which are referenced within another webpage.                                       |
 | <<Category>> <<Host>> Requested Webpage | Webpages requested by the user. May not be available either due to not existing or being blocked by the host.                                         |
 | <<System>> WET                          | WET is our system that anonymously searches a webpage for links based on user given pattern and assembles the webpages from those links into an epub. |
 
@@ -275,7 +275,7 @@ A special but common runtime view would be a website requesting a captcha to acc
 
   left to right direction
   'devices
-  node "Linux-PC" as hwd <<Device>>  {
+  node "Linux/Windows-PC" as hwd <<Device>>  {
 
           'environments
           node "Desktop Environment" as env <<Environment>> {
@@ -284,7 +284,7 @@ A special but common runtime view would be a website requesting a captcha to acc
                   component "Command-Line Interface" as comm <<Service>>
 
                   'system
-                  component "WET" as wet <<System>> <<Executable>>
+                  component "WebtoEpubwithTor" as wet <<System>> <<Executable>>
 
                   'artifacts
                   artifact "output.epub" as epub
@@ -309,17 +309,18 @@ A special but common runtime view would be a website requesting a captcha to acc
   center footer "**Deployment View Diagram for WET**"
 #+END_SRC
 
+
 [[file:./B-7.png]]
 
 Table 11. Deployment View Description
-| Actor                               | Description                                                                                                        |
-|-------------------------------------+--------------------------------------------------------------------------------------------------------------------|
-| <<Device>> Linux-PC                 | Personal computer that is running a linux operating system such as Fedora Workstation Edition.                     |
-| <<Environment>> Desktop Environment | Environment that provides a collection of graphical software for interacting with the computer's operating system. |
-| <<Service>> Command-Line Interface  | Command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                         |
-| <<System>> <<Executable>> WET       | Our system as an executable that can be called from a command line interface.                                      |
-| <<Category>> webpage.html           | Category of artifacts that are retrieved from a Webpage Server.                                                    |
-| output.epub                         | Requested webpages assorted into an epub.
+| Actor                                      | Description                                                                                                        |
+|--------------------------------------------+--------------------------------------------------------------------------------------------------------------------|
+| <<Device>> Linux/Windows-PC                | Personal computer that is running a linux operating system such as Fedora Workstation Edition or Windows 10.       |
+| <<Environment>> Desktop Environment        | Environment that provides a collection of graphical software for interacting with the computer's operating system. |
+| <<Service>> Command-Line Interface         | Command-line (CLI) interface to communicate with WET such as Bash, Zsh, or Command Prompt.                         |
+| <<System>> <<Executable>> WebtoEpubwithTor | Our system as an executable that can be called from a command line interface.                                      |
+| <<Category>> webpage.html                  | Category of artifacts that are parsed from a Webpage Server.                                                       |
+| output.epub                                | Requested webpages assorted into an epub.                                                                          |
 
 * Cross-cutting Concepts
 ** Cloudflare
@@ -349,49 +350,49 @@ To acquire these benefits the WET shall always use Tor Relays to access webpages
 ** Tor Browser
 25/03/02
 Table 12. Architecture Decision 1 Description
-| Section      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-|--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Title        | ADR 1: Anonymity with Tor Browser.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Context      | Anonymity is to know an action but not who is comitting it. To not know who is committing but know what they are comitting requires that each action an anonymous person commits could possibly be done by someone else. We can accept this as true if we consider the opposite situation, if an action can only be done by one person then every time such an action is performed we could easily identify who is performing it. Furthermore, the fewer someone elses there are, the more unique we become, and the less anonymous we shall be. So, how do we ensure that our actions are identityless i.e. anonymous? |
-| Decision     | To ensure we are identityless we must adopt similar traits to others and hide our real-world identities. Our solution is to use the Tor Browser which with Tor Relays ensures that the servers we access do not know the sender, and a browser that obfusicates between its users.                                                                                                                                                                                                                                                                                                                                      |
-| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| Consequences | Will increase the anonymity quality of the user; Web automation tools may not support or easily support our configuration; May increase the chances of encountering Site Protections from Cloudflare compared to normal browsing; Will increase the required setup for the system on the user's end; Will make emulating a user browser environment easier.                                                                                                                                                                                                                                                             |
+| Section      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+|--------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title        | ADR 1: Anonymity with Tor Browser.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Context      | Anonymity is to know an action but not who is comitting it. To not know who is commiting an action but know what they are comitting, requires that each action an anonymous person commits could possibly be done by someone else. We can accept this as true if we consider the opposite situation, if an action can only be done by one person then every time such an action is performed we could easily identify who is performing it. Furthermore, the fewer someone elses there are, the more unique we become, and the less anonymous we shall be. So, how do we ensure that our actions are identityless i.e. anonymous? |
+| Decision     | To ensure we are identityless we must adopt similar traits to others and hide our real-world identities. Our solution is to use the Tor Browser which with Tor Relays ensures that the servers we access do not know the sender, and a browser that obfusicates between its users.                                                                                                                                                                                                                                                                                                                                                |
+| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| Consequences | Will increase the anonymity quality of the user; Web automation tools may not support or easily support our configuration; May increase the chances of encountering Site Protections from Cloudflare compared to normal browsing; Will increase the required setup for the system on the user's end; Will make emulating a user browser environment easier.                                                                                                                                                                                                                                                                       |
 
 ** Selenium
 25/03/09
-Table 12. Architecture Decision 2 Description
-| Section      | Description                                                                                                                                                                                                                                                                                                               |
-|--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Title        | ADR 2: Automation with Selenium                                                                                                                                                                                                                                                                                           |
+Table 13. Architecture Decision 2 Description
+| Section      | Description                                                                                                                                                                                                                                                                                |
+|--------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title        | ADR 2: Automation with Selenium                                                                                                                                                                                                                                                            |
 | Context      | Browsers are a necessary component in bypassing bot protections as they are typical in a user environment. Emulating the user environment should not hinder functionality so the browser should be automated. Furthermore, any such tool should be compatible with C# and the Tor Browser. |
-| Decision     | The Selenium browser is a popular solution that can be set up to imitate an user browsing environment, compatible with the Tor Browser, and has a C# API.                                                                                           |
-| Status       | Accepted                                                                                                                                                                                                                                                                                                                  |
-| Consequences | Will increase memory usage on the host; May limit web scraping depending on the host's memory; Will automate requesting content from webpages; May increase the chances of encountering Site Protections from Cloudflare compared to normal browsing;
+| Decision     | The Selenium browser is a popular solution that can be set up to imitate an user browsing environment, is compatible with the Tor Browser, and has a C# API.                                                                                                                               |
+| Status       | Accepted                                                                                                                                                                                                                                                                                   |
+| Consequences | Will increase memory usage on the host; May limit web scraping depending on the host's memory; Will automate requesting content from webpages; May increase the chances of encountering Site Protections from Cloudflare compared to normal browsing;                                      |
 
 ** Main Webpage/Referenced Webpages
 25/03/09
 
-Table 13. Architecture Decision 3 Description
-| Section      | Description                                                                                                                                                                                                                                                                                                                                              |
-|--------------+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Title        | ADR 3: The Main Webpage/Referenced WebPages Pattern                                                                                                                                                                                                                                                                                               |
-| Context      | Sites that seperate related content into multiple webpages will usually reference them within one main webpage. For example, a webnovel will reference its chapters in a table of contents page or a wiki may organize its articles into a map of content page. Our software's purpose is to aggregate these seperate but related webpages into an epub. |
-| Decision     | To take advantage we must design our piece of software to look for hyperlinks according to a pattern within a main webpage and aggregate these referenced webpages together.                                                                                                                                                                           |
-| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                 |
-| Consequences | Limits software to only one degree of reference; Increases required setup from user; Simplifies web scraping by limiting amount of processing necessary to find pages; May lessen memory load on host machine due to fewer web accesses; |
+Table 14. Architecture Decision 3 Description
+| Section      | Description                                                                                                                                                                                                                                                                                                                                               |
+|--------------+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title        | ADR 3: The Main Webpage/Referenced Webpages Pattern                                                                                                                                                                                                                                                                                                       |
+| Context      | Sites that seperate related content into multiple webpages will usually reference them within one main webpage. For example, a webnovel will reference its chapters in a table of contents page or a wiki may organize its articles into a map of contents page. Our software's purpose is to aggregate these seperate but related webpages into an epub. |
+| Decision     | To take advantage we must design our piece of software to look for hyperlinks according to a pattern within a main webpage and aggregate these referenced webpages together.                                                                                                                                                                              |
+| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                  |
+| Consequences | Limits software to only one degree of reference; Increases required setup from user; Simplifies web scraping by limiting amount of processing necessary to find pages; May lessen memory load on host machine due to fewer web accesses;                                                                                                                  |
 
-** HTML to XHTML
+** TODO HTML to XHTML
 25/03/09
-Table 14. Architecture Decision 4 Description
-| Section      | Description                                                                                                                                                                                                                                                                                                                              |
-|--------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Title        | ADR 4: Converting HTML to XHTML with AngleSharp                                                                                                                                                                                                                                                                                          |
-| Context      | The EPUB format is a zipped XHTML, CSS, and any images and fonts files with a .epub extension. Webpages on the internet are formatted in .html. XHTML is a stricter version of HTML where improper formatting is not ignored as it is with HTML. Even with improper formatting HTML will still display in browsers while XHTML will not. |
-| Decision     | In order to convert HTML to XHTML and parse HTML pages for links the AngleSharp parser will be used within this project.                                                                                                                                                                                                                 |
-| Status       | Accepted                                                                                                                                                                                                                                                                                                                                 |
-| Consequences | Will allow us to create epubs; May not convert XHTML correctly; Will increase creating Epub wait time; Will allow us to parselinks within a html document.                                                                                                                                                                               |
+Table 15. Architecture Decision 4 Description
+| Section      | Description                                                                                                                                                                                                                                                                                                                     |
+|--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title        | ADR 4: Converting HTML to XHTML with AngleSharp                                                                                                                                                                                                                                                                                 |
+| Context      | The EPUB format is a zipped XHTML, CSS, images, and fonts file with a .epub extension. Webpages on the internet are formatted in HTML. XHTML is a stricter version of HTML where improper formatting is not ignored as it is with HTML. Even with improper formatting HTML will still display in browsers while XHTML will not. |
+| Decision     | In order to convert HTML to XHTML and parse HTML pages for links the AngleSharp parser will be used within this project.                                                                                                                                                                                                        |
+| Status       | Accepted                                                                                                                                                                                                                                                                                                                        |
+| Consequences | Will allow us to create epubs; May not convert XHTML correctly; Will increase creating Epub wait time; Will allow us to parse links within a html document.                                                                                                                                                                     |
 
-Table 15. HTML Parser Pugh Matrix
+Table 16. HTML Parser Pugh Matrix
 |          |                      |       Baseline |          A |               B |         C |
 |----------+----------------------+----------------+------------+-----------------+-----------|
 | Criteria | Criteria Description | Pandoc CL Tool | AngleSharp | HTMLAgilityPack | HTMLToXml |
@@ -401,16 +402,16 @@ Table 15. HTML Parser Pugh Matrix
 |        4 | Control              |              0 |         +1 |              +1 |         0 |
 
 25/05/27
-Table 16. Architecture Decision 4 Description
-| Section      | Description                                                                                                                                                                                                                                                                                                                                                                                 |
-|--------------+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Title        | ADR 4: Converting HTML to XHTML Manually                                                                                                                                                                                                                                                                                                                                                    |
-| Context      | The EPUB format is a zipped XHTML, CSS, and any images and fonts files with a .epub extension. Webpages on the internet are formatted in .html. XHTML is a stricter version of HTML where improper formatting is not ignored as it is with HTML. Even with improper formatting HTML will still display in browsers while XHTML will not. Selenium can retrieve visible text from a webpage. |
-| Decision     | Convert HTML to XHTML by retrieving the visible text in a webpage and programatically creating a xhtml file.                                                                                                                                                                                                                                                                                |
-| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                                                    |
-| Consequences | Will allow us to create epubs; Will convert XHTML correctly everytime; Will increase creating Epub wait time; 
+Table 18. Architecture Decision 4 Description
+| Section      | Description                                                                                                                                                                                                                                                                                                                                                                                                                         |
+|--------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title        | ADR 4: Converting HTML to XHTML Manually                                                                                                                                                                                                                                                                                                                                                                                            |
+| Context      | The EPUB format is a zipped XHTML, CSS, images, and fonts file with a .epub extension. Webpages on the internet are formatted in HTML. XHTML is a stricter version of HTML where improper formatting is not ignored as it is with HTML. Even with improper formatting HTML will still display in browsers while XHTML will not. Selenium can retrieve visible text from a webpage. Selenium can also retrieve links from a wepbage. |
+| Decision     | Convert HTML to XHTML by retrieving the visible text in a webpage and programatically creating a xhtml file.                                                                                                                                                                                                                                                                                                                        |
+| Status       | Accepted                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Consequences | Will allow us to create epubs; Will convert XHTML correctly everytime; Will increase creating Epub wait time;                                                                                                                                                                                                                                                                                                                       |
 
-Table 17. HTML to XHTML Pugh Matrix
+Table 19. HTML to XHTML Pugh Matrix
 |          |                      |       Baseline |          A |               B |         C |                    D |
 |----------+----------------------+----------------+------------+-----------------+-----------+----------------------|
 | Criteria | Criteria Description | Pandoc CL Tool | AngleSharp | HTMLAgilityPack | HTMLToXml | Manual HTML to XTHML |
@@ -437,7 +438,7 @@ Table 17. Description of Scenarios
 | No. | Scenario                                                                                                                                                                                                                                                                 |
 |-----+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | W01 | A user plans to download the top 10 novels from [[https://www.novelupdates.com/series-ranking/][novelupdates.]] He is able to download atleast 7 of the top 10 novels using the WET.                                                                                                                                       |
-| W02 | A recruiter with basic knowledge of UML looks for an overview on the implementation of the WET. He understands the overall design of this WET within 15 minutes using this document.                                                                                     |
+| W02 | A recruiter with basic knowledge of UML looks for an overview on the implementation of the WET. With this document he understands the overall design within 15 minutes.                                                                                                  |
 | W03 | An open source developer is looking for a code example to implement his own web scraper. He is able to find a test case that displays the WET's functionality in an understandable manner.                                                                               |
 | W04 | A potential user is looking for an anonymous alternative to common web to epub aggregators, he finds that the WET meet his requirements. The user uses the WET and finds that all of his requests were done through TOR ensuring that his epubs are created anonymously. |
 
@@ -445,7 +446,7 @@ Table 17. Description of Scenarios
 ** TR1: Stricter Bot Protections
 Description: Cloudflare and other CDNs change their bot detection tools regularly so what may work today may not work tomorrow.
 
-Mitigation: The Retrieve Requests Blackbox should be implemented first and documented with test cases so as to identify and reimplement functionality promptly.
+Mitigation: The Retrieve Requests Blackbox should be implemented first and documented with test cases so functionaly can be identified and reimplemented quickly.
 ** TR2: TOR Blocked
 Description: The TOR network may be blocked in the users' area.
 
@@ -453,4 +454,4 @@ Mitigation: Enable bridges for Tor Browser when necessary.
 ** TR3: Improper XHTML
 Description: Even if HTML is improper it is still rendered by the browser while XHTML must have proper syntax. When converting HTML to XHTML it is possible that the converted XHTML is invalid due to broken syntax.
 
-Mitigation: Use a manual HTML to XHTML method that ensures Html is always converted properly.
+Mitigation: Use a manual HTML to XHTML method that ensures HTML is always converted properly.

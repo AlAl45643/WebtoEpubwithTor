@@ -46,8 +46,6 @@ The WET is a replacement for downloading and converting web pages manually. The 
 | WET            | Our system that retrieves and assembles webpages into an EPUB.    |
 | Webpage Hoster | A hoster that holds the webpages that the user wants to retrieve. |
 
-
-#+END_SRC
 ** Product Functions
 PF-1: The product shall use standard tor relays to retrieve online content.
 
@@ -79,16 +77,15 @@ AS-2: The requested website references the needed webpages.
 
 * System Features
 ** Create a List
-
 *** Description
 The User can create a list of pages by scanning a webpage with a pattern. Priority = High
 
 *** Functional Requirements
 | CreatingRequests.New: | Creating a List                                    |
-|-------------------------+----------------------------------------------------|
-| .RequestName:           | The WET shall prompt the User for a request name. |
-| .Link:                  | The WET shall prompt the User for a valid link.    |
-| .Pattern:               | The WET shall prompt the User for a valid pattern. |
+|-----------------------+----------------------------------------------------|
+| .RequestName:         | The WET shall prompt the User for a request name.  |
+| .Link:                | The WET shall prompt the User for a valid link.    |
+| .Pattern:             | The WET shall prompt the User for a valid pattern. |
 
 ** View, Modify, and Delete Links in List
 
@@ -109,40 +106,39 @@ A User can create, view, add, remove, switch, and reverse the links in a list. P
 | .End:                   | The User shall specify a stopping index of the range of links to be displayed. |
 
 
-| CreatingRequests.Add: | Adding .Link at .Index                                                       |
-|-----------------------+------------------------------------------------------------------------------|
-| .RequestName:         | The WET shall prompt the User for a request name.                            |
-| .Link:                | The WET shall prompt the User for a valid link.                              |
-| .Index:               | The WET shall prompt the User for a valid index for the link to be added to. |
+| CreatingRequests.Add: | Adding .Link at .Index                                            |
+|-----------------------+-------------------------------------------------------------------|
+| .RequestName:         | The WET shall prompt the User for a request name.                 |
+| .Link:                | The User shall specify a valid link.                              |
+| .Index:               | The User shall specify a valid index for the link to be added to. |
 
 
-| CreatingRequests.RemoveAt: | Removing a link at .Index                                      |
-|----------------------------+----------------------------------------------------------------|
-| .RequestName:              | The WET shall prompt the User for a request name.              |
-| .Index:                    | The WET shall take a valid index to remove a link in the list. |
+| CreatingRequests.RemoveAt: | Removing a link at .Index                       |
+|----------------------------+-------------------------------------------------|
+| .RequestName:              | The User shall specify a request name.          |
+| .Index:                    | The User shall specify a valid index to remove. |
 
 
-| CreatingRequests.Reverse | Reverse the list of pages.                        |
-|--------------------------+---------------------------------------------------|
-| .RequestName:            | The WET shall prompt the User for a request name. |
+| CreatingRequests.Reverse | Reverse the list of pages.             |
+|--------------------------+----------------------------------------|
+| .RequestName:            | The User shall specify a request name. |
 
 
-| CreatingRequests.RemoveFrom | Removing links from .Start to                                                          |
-|-----------------------------+----------------------------------------------------------------------------------------|
-| .RequestName:               | The WET shall prompt the User for a request name.                                      |
-| .Begin:                     | The User shall specify an inclusive starting index for a range of links to be removed. |
-| .End:                       | The User shall specify an exclusive stopping index for a range of links to be removed. |
+| CreatingRequests.RemoveFrom | Removing links from .Start to                                         |
+|-----------------------------+-----------------------------------------------------------------------|
+| .RequestName:               | The User shall specify a request name.                                |
+| .Begin:                     | The User shall specify an inclusive starting index to start removing. |
+| .End:                       | The User shall specify an exclusive stopping index to stop removing.  |
 
 ** Export to Epub
-
 *** Description
 A User can save the content of webpages in a list, export the content into one continuous epub, and save it in their preferred folder. Priority = High
 
 *** Functional Requirements
-| CreatingRequests.ExportRequest: | Exporting the list into an Epub                                     |
-|---------------------------------+---------------------------------------------------------------------|
-| .RequestName:                   | The WET shall prompt the User for a request name.                   |
-| .Location                       | The User shall specify the location for the Epub to be exported to. |
+| CreatingRequests.ExportRequest: | Exporting the list into an Epub                          |
+|---------------------------------+----------------------------------------------------------|
+| .RequestName:                   | The User shall specify a request name.                   |
+| .Location                       | The User shall specify the export location for the Epub. |
 
 * External Interface Requirements
 ** User Interfaces
