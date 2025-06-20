@@ -69,16 +69,22 @@ namespace tests
         // cloudflare captcha test case
         [TestCase("https://2captcha.com/demo/cloudflare-turnstile-challenge")]
         /// <summary>
-        /// Check if CreatingRequests.RetrieveLinks waits for user to bypass blockers such as captchas or consent forms.
+        /// Check if CreatingRequests.RetrieveLinks waits until a link is found. Since there is no matching link, the test case will run until we close the browser.
         /// </summary>
         public void DoesRetrieveLinksWaitForBlockers(string site)
         {
-            CreatingRequests creatingRequest = new("temp", false);
+            try
+            {
+                CreatingRequests creatingRequest = new("temp", false);
 
-            Regex regex = new("");
-            creatingRequest.RequestLinks(site, regex);
+                Regex regex = new("no matching links regex");
+                creatingRequest.RequestLinks(site, regex);
+            }
+            catch (OpenQA.Selenium.UnknownErrorException)
+            {
+                Assert.That(true);
+            }
 
-            Assert.That(true);
         }
 
         [Test]

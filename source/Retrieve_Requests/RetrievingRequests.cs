@@ -62,7 +62,7 @@ namespace source.Retrieve_Requests
             {
                 WaitForTorConnection(torBrowser);
                 torBrowser.Navigate().GoToUrl(link);
-                WaitForBlockers(torBrowser);
+                WaitForLinks(torBrowser, link, regex);
                 var elements = torBrowser.FindElements(By.TagName("a"));
                 foreach (var element in elements)
                 {
@@ -120,11 +120,43 @@ namespace source.Retrieve_Requests
         }
 
         /// <summary>
+        /// Wait until links matching regex exist.
+        /// </summary>
+        private void WaitForLinks(FirefoxDriver driver, string link, Regex regex)
+        {
+            WebDriverWait wait = new(driver, TimeSpan.FromSeconds(180));
+            _ = wait.Until(i =>
+           {
+               try
+               {
+                   var elements = driver.FindElements(By.TagName("a"));
+                   foreach (var element in elements)
+                   {
+                       var href = element.GetAttribute("href");
+                       if (href == null)
+                       {
+                           continue;
+                       }
+                       if (regex.IsMatch(href))
+                       {
+                           return true;
+                       }
+                   }
+               }
+               catch (StaleElementReferenceException e)
+               {
+                   return false;
+               }
+               return false;
+           });
+        }
+
+        /// <summary>
         /// Check if our request has been blocked by anything. If so, wait for user input.
         /// </summary>
-        public void WaitForBlockers(FirefoxDriver driver)
+        private void WaitForBlockers(FirefoxDriver driver)
         {
-            List<Func<IWebDriver, bool>> conditions = new() { NoInformationConsentForm, NoCloudflareCaptcha, NoCloudflareCaptcha2 };
+            List<Func<IWebDriver, bool>> conditions = new() { NoCloudflareCaptcha, NoCloudflareCaptcha2 };
             WebDriverWait wait = new(driver, TimeSpan.FromSeconds(180));
             foreach (Func<IWebDriver, bool> condition in conditions)
             {
@@ -132,15 +164,6 @@ namespace source.Retrieve_Requests
             }
         }
 
-
-        /// <summary>
-        /// Returns false if Information Consent Form is visible.
-        /// </summary>
-        /// <returns><c>bool</c></returns>
-        private bool NoInformationConsentForm(IWebDriver driver)
-        {
-            return driver.FindElements(By.ClassName("fc-consent-root")).Count == 0;
-        }
 
         /// <summary>
         /// Returns false if Cloudflare Captcha is visible.
